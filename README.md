@@ -29,3 +29,21 @@ Running the tests
     cd server/src
     nosetests
 
+API usage examples
+------------------
+
+    $ curl http://localhost:8080/api/v1/poems
+    ["this-is-a-photo", "a-question"]
+
+    $ curl -i http://localhost:8080/api/v1/poems
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Transfer-Encoding: chunked
+    Date: Wed, 30 Oct 2013 16:17:45 GMT
+    Server: localhost
+
+    ["this-is-a-photo", "a-question"]
+
+    $ curl http://localhost:8080/api/v1/poems/a-question
+    {"text": "A voice said, Look me in the stars\nAnd tell me truly, men of earth,\nIf all the soul-and-body scars\nWere not too much to pay for birth.\n", "title": "A Question", "id": "a-question", "author": "Robert Frost"}
+
