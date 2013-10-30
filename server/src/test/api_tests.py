@@ -3,11 +3,13 @@ from nose.tools import *
 import json
 
 from fakedb import FakeDb
+from fakeweb import FakeWeb
 
 from poemtube.api.v1 import Poems
 
 def Can_list_poems_in_json__test():
-    handler = Poems( FakeDb() )
+    fakeweb = FakeWeb()
+    handler = Poems( FakeDb(), fakeweb )
 
     # This is what we are testing - list poems in JSON
     answer = handler.GET( "" )
@@ -24,8 +26,16 @@ def Can_list_poems_in_json__test():
         lst
     )
 
+    # We set the content type correctly
+    assert_equal(
+        "application/json",
+        fakeweb.headers["Content-Type"]
+    )
+
+
 def Can_list_poems_in_json_with_slash_in_url__test():
-    handler = Poems( FakeDb() )
+    fakeweb = FakeWeb()
+    handler = Poems( FakeDb(), fakeweb )
 
     # This is what we are testing - list poems in JSON
     answer = handler.GET( "/" )
@@ -42,8 +52,15 @@ def Can_list_poems_in_json_with_slash_in_url__test():
         lst
     )
 
+    # We set the content type correctly
+    assert_equal(
+        "application/json",
+        fakeweb.headers["Content-Type"]
+    )
+
 def Can_get_single_poem_in_json__test():
-    handler = Poems( FakeDb() )
+    fakeweb = FakeWeb()
+    handler = Poems( FakeDb(), fakeweb )
 
     # This is what we are testing - get a poem
     jans = handler.GET( "/id1" )
@@ -60,6 +77,11 @@ def Can_get_single_poem_in_json__test():
             "text"   : "text1",
         },
         ans
+    )
+
+    assert_equal(
+        "application/json",
+        fakeweb.headers["Content-Type"]
     )
 
 
