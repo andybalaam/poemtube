@@ -3,7 +3,7 @@
 import sys
 import web
 
-from poemtube.urls import urls
+from poemtube import urls
 
 app = web.application( urls, globals() )
 

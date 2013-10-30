@@ -1,9 +1,7 @@
 
-from api.v1 import Poem
-from site import Home
-
 urls = (
-	"/api/v1/poems/.*", "Poem",
-	"/.*", "Home",
-	)
+	"/api/v1/poems(.*)", "poemtube.api.v1.Poems",
+
+	"/", "poemtube.site.Home",
+)
 

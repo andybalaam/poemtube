@@ -1,3 +1,5 @@
+
 class Home:
-    pass
+    def GET( self ):
+        return "Web site will go here."
 
