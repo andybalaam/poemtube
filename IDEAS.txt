@@ -1,0 +1,129 @@
+
+- Fake database, emulating couchdb api, supporting tables:
+
+  Very simplified schema:
+
+  item: item_id ->
+    title
+    text
+    author
+    user_id(uploader)
+
+  user: user_id -> name, description, email, hashed_password
+
+- Create some sample data in JavaScript
+
+- API to get an item
+
+- Minimal web page wrapper over API?
+
+- Web page to display an item
+
+- POST API to create an item
+
+- Web page to create an item
+
+- Everything ssl all the time
+
+- OAuth2 via passportjs on create API. user_id comes from auth, not req params
+
+- Local auth via passportjs on create page
+
+- Full database schema:
+
+  item: item_id ->
+    title
+    text
+    author_id
+    user_id(uploader)
+    timestamp
+    num_likes
+    num_dislikes
+    num_flags
+
+  comments: item_id -> [ user_id, title, text, timestamp, num_flags ]
+
+  user:         user_id -> name, description, email, hashed_password
+  user_uploads: user_id -> [ item_id(uploaded) ]
+
+  author:          author_id -> name, description, email, user_id(creator)
+  author_authored: author_id -> [ item_id(authored) ]
+
+  and later, relationships between items:
+
+  related_items: item_id -> [ item_id(related), relatedness_rating ]
+
+  and later, traceability with things like:
+
+  user_item_likes:    user_id -> [ item_id ]
+  user_item_dislikes: user_id -> [ item_id ]
+  user_item_flags:    user_id -> [ item_id ]
+  user_comment_flags: user_id -> [ item_id, comment_index ]
+
+- API for editing items
+
+- Web page for editing items
+
+- Web page for creating users
+
+- Web page for getting auth tokens
+
+- Clicks on related/featured add relationships to items
+
+- Like, dislike, flag
+
+- Disable entries flagged over threshold
+
+- API for search (matches author, title, text)
+
+- Web page for search results (clicks add relationships to previous poem)
+
+- API for user info (no email)
+
+- User web page
+
+- API for author info (no email)
+
+- Author web page
+
+- Item web page:
+
+  Quiet mode:
+
+                                                                   quiet [loud]
+
+
+                    TITLE
+
+                    POEM
+
+                    AUTHOR
+
+  (All in a pre tag, but with a nice font)
+
+  Loud mode:
+
+  messages
+  [username]   [log out]                search: [         ]      [quiet] loud
+--------------------------------------------------------------------------------
+               TITLE                                           | Related:      |
+                                                               |               |
+               POEM                                            | title         |
+                                                               | snippet       |
+               AUTHOR                                          |               |
+                                                               | title         |
+ [like/dislike/flag] [facebook] [tweet] [g+] [more]            | snippet       |
+---------------------------------------------------------------|               |
+ Comments:                                                     | Featured:     |
+                                                               |               |
+ Title, author                                                 | title         |
+ comment, comment                                    [flag]    | snippet       |
+                                                               |               |
+ Title, author                                                 | title         |
+ comment, comment                                    [flag]    | snippet       |
+                                                               |               |
+--------------------------------------------------------------------------------
+
+- Later: history of changes to items and authors
+
+
