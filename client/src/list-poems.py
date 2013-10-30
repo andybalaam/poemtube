@@ -11,7 +11,9 @@ fmt = "%-20s %-20s %s"
 print( fmt % ( "ID", "AUTHOR", "TITLE" ) )
 print( "=" * 80 )
 
-for poem in r.json:
-    print( fmt % ( poem['id'], poem['author'], poem['title'] ) )
+for poemid in r.json:
+    # TODO - author and title
+    #print( fmt % ( poem['id'], poem['author'], poem['title'] ) )
+    print( fmt % ( poemid, "", "" ) )
 
 

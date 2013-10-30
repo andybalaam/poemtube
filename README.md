@@ -19,4 +19,13 @@ Getting started
     ./list-poems.py           # list the available poems
     ./get-poem.py a-question  # print a single poem
 
+Running the tests
+-----------------
+
+    # Dependencies
+    sudo apt-get install python-nose
+
+    # Run all tests
+    cd server/src
+    nosetests
 
