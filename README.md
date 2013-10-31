@@ -49,23 +49,22 @@ Add a poem:
     $ curl http://localhost:8080/api/v1/poems/foo
     {"text": "Baz", "title": "Foo", "id": "foo", "author": "Bar"}
 
-Modify a poem:
+Replace a poem:
 
     $ curl --request PUT --data '{"title":"Foo2","author":"Bar2","text":"Baz2"}' http://localhost:8080/api/v1/poems/a-question
     $ curl http://localhost:8080/api/v1/poems/a-question
     {"text": "Baz2", "title": "Foo2", "id": "foo", "author": "Bar2"}
 
-Notes
------
+Delete a poem:
 
-To see the HTTP headers, add -i in your curl requests:
-
-    $ curl -i http://localhost:8080/api/v1/poems
-    HTTP/1.1 200 OK
+    $ curl --request DELETE http://localhost:8080/api/v1/poems/a-question
+    ""
+    $ curl -i http://localhost:8080/api/v1/poems/a-question
+    HTTP/1.1 404 Not Found
     Content-Type: application/json
     Transfer-Encoding: chunked
-    Date: Wed, 30 Oct 2013 16:17:45 GMT
+    Date: Thu, 31 Oct 2013 15:22:39 GMT
     Server: localhost
 
-    ["this-is-a-photo", "a-question"]
+    {"error": "\"a-question\" is not the ID of an existing poem."}
 
