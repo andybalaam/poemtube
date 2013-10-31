@@ -3,7 +3,7 @@ from nose.tools import *
 
 from fakedb import FakeDb
 
-import poemtube.listpoems
+import poemtube
 from poemtube.errors import InvalidRequest
 
 def Can_list_all_poems__test():
@@ -73,7 +73,20 @@ def Replacing_a_nonexistent_poem_is_an_error__test():
     poemtube.replacepoem(
         db, "nonexistid", title="title X", author="author X", text="text X" )
 
+def Can_delete_a_poem__test():
+    db = FakeDb()
 
+    # Sanity - id1 exists
+    assert_true( "id1" in db.poems )
 
+    # This is what we are testing - delete the item
+    poemtube.deletepoem( db, "id1" )
 
+    # It has gone
+    assert_false( "id1" in db.poems )
+
+@raises( InvalidRequest )
+def Deleting_a_nonexistent_poem_is_an_error__test():
+    db = FakeDb()
+    poemtube.deletepoem( db, "nonexistid" )
 

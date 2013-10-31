@@ -28,14 +28,12 @@ def test_app():
 def assert_successful_json_response( r ):
     assert_equal( 200, r.status )
     assert_equal( "application/json", r.header( "Content-Type" ) )
-    if r.body != "":
-        json.loads( r.body )
+    json.loads( r.body )
 
 def assert_failed_json_response( expected_status, r ):
     assert_equal( expected_status, r.status )
     assert_equal( "application/json", r.header( "Content-Type" ) )
-    if r.body != "":
-        json.loads( r.body )
+    json.loads( r.body )
 
 
 def Can_list_poems_in_json__test():
@@ -133,7 +131,7 @@ def Can_replace_existing_poem_in_json__test():
     assert_successful_json_response( r )
 
     # The response is empty
-    assert_equal( "", r.body )
+    assert_equal( "", json.loads( r.body ) )
 
     # The database should have new version of the poem
     assert_equal( poem, app.fakedb.poems["id2"] )
@@ -160,6 +158,38 @@ def Replacing_a_nonexistent_poem_returns_error_response__test():
         json.loads( r.body )
     )
 
+
+def Can_delete_existing_poem_in_json__test():
+    app = test_app()
+
+    # Sanity - the poem exists
+    assert_true( "id3" in app.fakedb.poems )
+
+    # This is what we are testing - modify an existing poem
+    r = app.delete( "/api/v1/poems/id3" )
+    assert_successful_json_response( r )
+
+    # The response is empty
+    assert_equal( "", json.loads( r.body ) )
+
+    # The poem is gone
+    assert_false( "id3" in app.fakedb.poems )
+
+
+def Deleting_a_nonexistent_poem_returns_error_response__test():
+    # This is what we are testing
+    r = test_app().delete( "/api/v1/poems/nonexistentid", expect_errors=True )
+
+    # The request failed
+    assert_failed_json_response( 404, r )
+
+    # We received an error message
+    assert_equal(
+        {
+            'error': '"nonexistentid" is not the ID of an existing poem.'
+        },
+        json.loads( r.body )
+    )
 
 
 # TODO: error conditions:

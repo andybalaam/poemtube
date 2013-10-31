@@ -74,15 +74,25 @@ def Can_add_a_new_poem__test():
         db.poems[id]["text"]
     )
 
+
 def Can_replace_an_existing_poem__test():
     db = FakeDb()
+
+    # Sanity - poem exists
+    assert_equal( "title3", db.poems["id3"]["title"] )
 
     newpoem = {
         "title"  : "A Poem",
         "author" : "Andy Balaam",
         "text"   : "Sometimes, sometimes\nSometimes.\n"
     }
+
+    # This is what we are testing
     json_poems.PUT( db, "id3", json.dumps( newpoem ) )
+
+    # The poem was replaced with what we supplied
+    assert_equal( newpoem, db.poems["id3"] )
+
 
 def Replacing_an_invalid_id_is_an_error__test():
     db = FakeDb()
@@ -95,6 +105,34 @@ def Replacing_an_invalid_id_is_an_error__test():
     caught_exception = None
     try:
         json_poems.PUT( db, "nonexistid", json.dumps( newpoem ) )
+    except JsonInvalidRequest, e:
+        caught_exception = e
+
+    assert_is_not_none( caught_exception )
+
+    assert_equal(
+        { 'error': '"nonexistid" is not the ID of an existing poem.' },
+        json.loads( str( caught_exception ) )
+    )
+
+
+def Can_delete_an_existing_poem__test():
+    db = FakeDb()
+
+    # Sanity - poem exists
+    assert_equal( "title1", db.poems["id1"]["title"] )
+
+    # This is what we are testing
+    json_poems.DELETE( db, "id1" )
+
+    # It no longer exists
+    assert_false( "id1" in db.poems )
+
+
+def Deleting_an_invalid_id_is_an_error__test():
+    caught_exception = None
+    try:
+        json_poems.DELETE( FakeDb(), "nonexistid" )
     except JsonInvalidRequest, e:
         caught_exception = e
 
