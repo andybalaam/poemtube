@@ -34,29 +34,13 @@ class Poems:
         self.db = get_db()
 
     def GET( self, urlid ):
-        # Strip leading slash
-        id = urlid[1:]
-
-        web.header( 'Content-Type', 'application/json' )
-        try:
-            return json_poems.GET( self.db, id )
-        except Exception, e:
-            raise http_error( e )
+        return do_json( json_poems.GET, self.db, clean_id( urlid ) )
 
     def POST( self, urlid ):
         return do_json( json_poems.POST, self.db, web.data() )
 
     def PUT( self, urlid ):
-        # Strip leading slash
-        id = urlid[1:]
-
-        data = web.data()
-
-        web.header( 'Content-Type', 'application/json' )
-        try:
-            return json_poems.PUT( self.db, id, data )
-        except Exception, e:
-            raise http_error( e )
+        return do_json( json_poems.PUT, self.db, clean_id( urlid ), web.data() )
 
     def DELETE( self, urlid ):
         return do_json( json_poems.DELETE, self.db, clean_id( urlid ) )
