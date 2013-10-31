@@ -11,6 +11,6 @@ class FakeWeb( object ):
     def header( self, name, value ):
         self.headers[name] = value
 
-    def input( self ):
+    def data( self ):
         return self.inp
 
