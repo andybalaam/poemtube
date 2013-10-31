@@ -68,3 +68,13 @@ Delete a poem:
 
     {"error": "\"a-question\" is not the ID of an existing poem."}
 
+Amend a poem:
+
+    $ curl --request PATCH --data '{"text":"Cheer up"}' http://localhost:8080/api/v1/poems/a-question
+    ""
+    $ curl http://localhost:8080/api/v1/poems/a-question
+    {"text": "Cheer up", "title": "A Question", "id": "a-question", "author": "Robert Frost"}
+
+
+
+

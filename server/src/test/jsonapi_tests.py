@@ -46,6 +46,8 @@ def Getting_a_nonexistent_poem_is_an_error__test():
         json.loads( str( caught_exception ) )
     )
 
+    assert_equal( 404, caught_exception.suggested_code )
+
 
 def Can_add_a_new_poem__test():
     db = FakeDb()
@@ -115,6 +117,8 @@ def Replacing_an_invalid_id_is_an_error__test():
         json.loads( str( caught_exception ) )
     )
 
+    assert_equal( 404, caught_exception.suggested_code )
+
 
 def Can_delete_an_existing_poem__test():
     db = FakeDb()
@@ -143,6 +147,77 @@ def Deleting_an_invalid_id_is_an_error__test():
         json.loads( str( caught_exception ) )
     )
 
+    assert_equal( 404, caught_exception.suggested_code )
+
+
+def Can_amend_an_existing_poem__test():
+    db = FakeDb()
+
+    # Sanity
+    assert_equal( "title1", db.poems["id1"]["title"] )
+
+    mods = {
+        "title"  : "A Poem",
+        "text"   : "Sometimes, sometimes\nSometimes.\n"
+    }
+
+    # This is what we are testing
+    json_poems.PATCH( db, "id1", json.dumps( mods ) )
+
+    # The poem was replaced with what we supplied
+    assert_equal(
+        {
+            "title"  : "A Poem",
+            "author" : "author1",
+            "text"   : "Sometimes, sometimes\nSometimes.\n"
+        },
+        db.poems["id1"]
+    )
+
+
+def Amending_with_invalid_properties_is_an_error__test():
+    db = FakeDb()
+
+    newprops = {
+        "foo" : "Andy Balaam"
+    }
+
+    caught_exception = None
+    try:
+        json_poems.PATCH( db, "id3", json.dumps( newprops ) )
+    except JsonInvalidRequest, e:
+        caught_exception = e
+
+    assert_is_not_none( caught_exception )
+
+    assert_equal(
+        { 'error': '"foo" is not a valid property of a poem.' },
+        json.loads( str( caught_exception ) )
+    )
+
+    assert_equal( 400, caught_exception.suggested_code )
+
+
+def Amending_an_invalid_id_is_an_error__test():
+    db = FakeDb()
+
+    newpoem = {
+        "title"  : "A Poem"
+    }
+    caught_exception = None
+    try:
+        json_poems.PATCH( db, "nonexistid", json.dumps( newpoem ) )
+    except JsonInvalidRequest, e:
+        caught_exception = e
+
+    assert_is_not_none( caught_exception )
+
+    assert_equal(
+        { 'error': '"nonexistid" is not the ID of an existing poem.' },
+        json.loads( str( caught_exception ) )
+    )
+
+    assert_equal( 404, caught_exception.suggested_code )
 
 
 

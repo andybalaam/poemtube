@@ -3,12 +3,16 @@ from paste.fixture import TestApp
 from nose.tools import *
 
 import json
+import warnings
 import web
 
 from fakedb import FakeDb
 
 import poemtube.api.v1.poems
 import poemtube.urls
+
+# Suppress a warning for the PATCH method
+warnings.filterwarnings( "ignore", "Unknown REQUEST_METHOD: 'PATCH'" )
 
 # Create our app
 app = web.application( poemtube.urls, {} )
@@ -187,6 +191,86 @@ def Deleting_a_nonexistent_poem_returns_error_response__test():
     assert_equal(
         {
             'error': '"nonexistentid" is not the ID of an existing poem.'
+        },
+        json.loads( r.body )
+    )
+
+
+def patch( app, url, params, expect_errors=False ):
+    return app.post(
+        url,
+        extra_environ={ "REQUEST_METHOD": "PATCH" },
+        params=params,
+        expect_errors=expect_errors
+    )
+
+
+def Can_amend_an_existing_poem__test():
+    newprops = {
+        "author": "Me",
+        "text"  : "my peom\nis    misspelt.\n"
+    }
+
+    app = test_app()
+
+    # This is what we are testing
+    r = patch(
+        app,
+        "/api/v1/poems/id2",
+        params=json.dumps( newprops )
+    )
+    assert_successful_json_response( r )
+
+    assert_equal(
+        {
+            "title": "title2",
+            "author": "Me",
+            "text"  : "my peom\nis    misspelt.\n"
+        },
+        app.fakedb.poems["id2"]
+    )
+
+def Amending_a_nonexistent_poem_returns_an_error__test():
+    poem = { "title":"t" }
+
+    # This is what we are testing
+    r = patch(
+        test_app(),
+        "/api/v1/poems/nonexistentid",
+        params=json.dumps( poem ),
+        expect_errors=True
+    )
+
+    # The request failed
+    assert_failed_json_response( 404, r )
+
+    # We received an error message
+    assert_equal(
+        {
+            'error': '"nonexistentid" is not the ID of an existing poem.'
+        },
+        json.loads( r.body )
+    )
+
+
+def Amending_with_a_bad_property_returns_an_error__test():
+    poem = { "notaprop":"t" }
+
+    # This is what we are testing
+    r = patch(
+        test_app(),
+        "/api/v1/poems/id2",
+        params=json.dumps( poem ),
+        expect_errors=True
+    )
+
+    # The request failed
+    assert_failed_json_response( 400, r )
+
+    # We received an error message
+    assert_equal(
+        {
+            'error': '"notaprop" is not a valid property of a poem.'
         },
         json.loads( r.body )
     )

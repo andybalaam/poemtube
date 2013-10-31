@@ -90,3 +90,89 @@ def Deleting_a_nonexistent_poem_is_an_error__test():
     db = FakeDb()
     poemtube.deletepoem( db, "nonexistid" )
 
+def Can_amend_a_poem_title__test():
+    db = FakeDb()
+
+    # Sanity - before modifying
+    assert_equal(
+        {
+            "title"  : "title1",
+            "author" : "author1",
+            "text"   : "text1"
+        },
+        db.poems["id1"]
+    )
+
+    # This is what we are testing
+    poemtube.amendpoem( db, "id1", { "title": "title X" } )
+
+    # Title changed
+    assert_equal(
+        {
+            "title"  : "title X",
+            "author" : "author1",
+            "text"   : "text1"
+        },
+        db.poems["id1"]
+    )
+
+def Can_amend_a_poem_author__test():
+    db = FakeDb()
+
+    # This is what we are testing
+    poemtube.amendpoem( db, "id1", { "author": "author X" } )
+
+    # Title changed
+    assert_equal(
+        {
+            "title"  : "title1",
+            "author" : "author X",
+            "text"   : "text1"
+        },
+        db.poems["id1"]
+    )
+
+def Can_amend_a_poem_text__test():
+    db = FakeDb()
+
+    # This is what we are testing
+    poemtube.amendpoem( db, "id2", { "text": "text X" } )
+
+    # Title changed
+    assert_equal(
+        {
+            "title"  : "title2",
+            "author" : "author2",
+            "text"   : "text X"
+        },
+        db.poems["id2"]
+    )
+
+
+def Can_amend_a_poem_multiple__test():
+    db = FakeDb()
+
+    # This is what we are testing
+    poemtube.amendpoem( db, "id1", { "text": "text X", "author": "author X" } )
+
+    # Title changed
+    assert_equal(
+        {
+            "title"  : "title1",
+            "author" : "author X",
+            "text"   : "text X"
+        },
+        db.poems["id1"]
+    )
+
+
+@raises( InvalidRequest )
+def Amending_using_unknown_property_is_an_error__test():
+    poemtube.amendpoem( FakeDb(), "id1", { "text": "t", "badprop": "foo" } )
+
+
+@raises( InvalidRequest )
+def Amending_an_unknown_id_is_an_error__test():
+    poemtube.amendpoem( FakeDb(), "unknown", { "text": "t" } )
+
+

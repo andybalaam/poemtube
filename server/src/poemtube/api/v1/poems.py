@@ -13,8 +13,17 @@ def http_error( e ):
     """
     Create an HTTP error from the supplied exception
     """
+
+    cod = e.suggested_code
+    if cod == 400:
+        status = "400 Bad Request"
+    elif cod == 404:
+        status = "404 Not Found"
+    else:
+        status = "500 Internal Server Error"
+
     return web.HTTPError(
-        status="404 Not Found",
+        status=status,
         data=str(e)
     )
 
@@ -40,8 +49,13 @@ class Poems:
         return do_json( json_poems.POST, self.db, web.data() )
 
     def PUT( self, urlid ):
-        return do_json( json_poems.PUT, self.db, clean_id( urlid ), web.data() )
+        return do_json(
+            json_poems.PUT, self.db, clean_id( urlid ), web.data() )
 
     def DELETE( self, urlid ):
         return do_json( json_poems.DELETE, self.db, clean_id( urlid ) )
+
+    def PATCH( self, urlid ):
+        return do_json(
+            json_poems.PATCH, self.db, clean_id( urlid ), web.data() )
 

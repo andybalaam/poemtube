@@ -4,7 +4,8 @@ from poemtube.errors import InvalidRequest
 
 def getpoem( db, id ):
     if id not in db.poems:
-        raise InvalidRequest( '"%s" is not the ID of an existing poem.' % id )
+        raise InvalidRequest(
+            '"%s" is not the ID of an existing poem.' % id, 404 )
     ans = copy( db.poems[id] )
     ans["id"] = id
     return ans

@@ -2,6 +2,7 @@
 import json
 
 from poemtube import addpoem
+from poemtube import amendpoem
 from poemtube import deletepoem
 from poemtube import getpoem
 from poemtube import listpoems
@@ -21,6 +22,11 @@ def my_replacepoem( db, id, title, author, text ):
 
 def my_deletepoem( db, id ):
     deletepoem( db, id )
+    return ""
+
+
+def my_amendpoem( db, id, newprops ):
+    amendpoem( db, id, newprops )
     return ""
 
 
@@ -65,4 +71,8 @@ def PUT( db, id, data ):
 
 def DELETE( db, id ):
     return do( my_deletepoem, db, id )
+
+def PATCH( db, id, data ):
+    parsed_data = json.loads( data )
+    return do( my_amendpoem, db=db, id=id, newprops=parsed_data )
 

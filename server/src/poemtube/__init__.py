@@ -1,4 +1,5 @@
 from addpoem import addpoem
+from amendpoem import amendpoem
 from deletepoem import deletepoem
 from getpoem import getpoem
 from listpoems import listpoems
