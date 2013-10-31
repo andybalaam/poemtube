@@ -4,7 +4,7 @@ import json
 from poemtube import addpoem
 from poemtube import getpoem
 from poemtube import listpoems
-from poemtube import modifypoem
+from poemtube import replacepoem
 
 from poemtube.errors import InvalidRequest
 from poemtube.jsonapi.json_errors import JsonInvalidRequest
@@ -35,7 +35,7 @@ def POST( db, data ):
 def PUT( db, id, data ):
     parsed_data = json.loads( data )
     try:
-        modifypoem(
+        replacepoem(
             db=db,
             id=id,
             title = parsed_data["title"],
