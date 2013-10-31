@@ -8,6 +8,16 @@ default_db = MemoryDb()
 def get_db():
     return default_db
 
+def http_error( e ):
+    """
+    Create an HTTP error from the supplied exception
+    """
+    return web.HTTPError(
+        status="404 Not Found",
+        data=str(e)
+    )
+
+
 class Poems:
     def __init__( self ):
         self.db = get_db()
@@ -17,7 +27,10 @@ class Poems:
         id = urlid[1:]
 
         web.header( 'Content-Type', 'application/json' )
-        return json_poems.GET( self.db, id )
+        try:
+            return json_poems.GET( self.db, id )
+        except Exception, e:
+            raise http_error( e )
 
     def POST( self, urlid ):
         data = web.data()
@@ -35,8 +48,5 @@ class Poems:
         try:
             return json_poems.PUT( self.db, id, data )
         except Exception, e:
-            raise web.HTTPError(
-                status="404 Not Found",
-                data=str(e)
-            )
+            raise http_error( e )
 

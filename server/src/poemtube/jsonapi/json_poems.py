@@ -16,10 +16,13 @@ def list_poems( db ):
     return json.dumps( list( listpoems( db ) ) )
 
 def GET( db, id ):
-    if id == "":
-        return list_poems( db )
-    else:
-        return single_poem( db, id )
+    try:
+        if id == "":
+            return list_poems( db )
+        else:
+            return single_poem( db, id )
+    except InvalidRequest, e:
+        raise JsonInvalidRequest( e )
 
 def POST( db, data ):
     parsed_data = json.loads( data )

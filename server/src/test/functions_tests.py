@@ -21,6 +21,10 @@ def Can_get_an_individual_poem__test():
     assert_equal( "title2",  answer["title"] )
     assert_equal( "text2",   answer["text"] )
 
+@raises( InvalidRequest )
+def Getting_a_nonexistent_poem_is_an_error__test():
+    poemtube.getpoem( FakeDb(), "nonexistentid" )
+
 def Can_add_a_new_poem__test():
     db = FakeDb()
     id = poemtube.addpoem(

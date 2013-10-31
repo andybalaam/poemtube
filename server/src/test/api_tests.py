@@ -81,6 +81,21 @@ def Can_get_single_poem_in_json__test():
     )
 
 
+def Getting_a_nonexistent_poem_returns_an_error_response__test():
+    # This is what we are testing - ask for a nonexistent ID
+    r = test_app().get( "/api/v1/poems/nonexistent", expect_errors=True )
+    assert_failed_json_response( 404, r )
+
+    # We received an error message
+    assert_equal(
+        {
+            'error': '"nonexistent" is not the ID of an existing poem.'
+        },
+        json.loads( r.body )
+    )
+
+
+
 def Can_add_new_poem_in_json__test():
     poem = {
         "title"  : "My New Poem",
@@ -148,7 +163,6 @@ def Replacing_a_nonexistent_poem_returns_error_response__test():
 
 
 # TODO: error conditions:
-#   - bad id for GET/PUT/PATCH
 #   - missing id for PUT/PATCH
 #   - any id for POST
 #   - non-JSON for POST/PUT/PATCH

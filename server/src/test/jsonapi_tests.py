@@ -32,6 +32,21 @@ def Can_get_single_poem__test():
     assert_equal( "author3", ans["author"] )
     assert_equal( "text3",   ans["text"] )
 
+def Getting_a_nonexistent_poem_is_an_error__test():
+    caught_exception = None
+    try:
+        json_poems.GET( FakeDb(), "nonexistid" )
+    except JsonInvalidRequest, e:
+        caught_exception = e
+
+    assert_is_not_none( caught_exception )
+
+    assert_equal(
+        { 'error': '"nonexistid" is not the ID of an existing poem.' },
+        json.loads( str( caught_exception ) )
+    )
+
+
 def Can_add_a_new_poem__test():
     db = FakeDb()
     newpoem = {
