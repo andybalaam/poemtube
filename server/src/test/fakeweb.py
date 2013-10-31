@@ -6,7 +6,11 @@ class FakeWeb( object ):
 
     def __init__( self ):
         self.headers = {}
+        self.inp = {}
 
     def header( self, name, value ):
         self.headers[name] = value
+
+    def input( self ):
+        return self.inp
 

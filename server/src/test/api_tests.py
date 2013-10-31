@@ -84,4 +84,42 @@ def Can_get_single_poem_in_json__test():
         fakeweb.headers["Content-Type"]
     )
 
+def Can_add_new_poem_in_json__test():
+    fakeweb = FakeWeb()
+    fakedb = FakeDb()
+    handler = Poems( fakedb, fakeweb )
+
+    poem = {
+        "title"  : "My New Poem",
+        "author" : "Frank Black",
+        "text"   : "Soda spoke\n  softly\nSoda\n"
+    }
+
+    fakeweb.inp = json.dumps( poem )
+
+    # This is what we are testing - add a poem
+    jans = handler.POST( "/" )
+
+    # The answer should be valid JSON
+    ans = json.loads( jans )
+
+    # It should be the id of the new poem
+    assert_equal( "my-new-poem", ans )
+
+    # And the database should have the poem added
+    assert_equal( poem, fakedb.poems[ans] )
+
+
+# TODO: error conditions:
+#   - bad id for GET/PUT/PATCH
+#   - missing id for PUT/PATCH
+#   - any id for POST
+#   - non-JSON for POST/PUT/PATCH
+#   - missing attributes for POST/PUT
+#   - invalid/extra attributes for POST/PUT/PATCH
+
+# TODO: features:
+#   - avoid overwriting an old poem when posting a new one
+
+
 

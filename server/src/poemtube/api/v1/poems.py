@@ -15,3 +15,9 @@ class Poems:
         self.web.header( 'Content-Type', 'application/json' )
         return json_poems.GET( self.db, id )
 
+    def POST( self, urlid ):
+        data = self.web.data()
+
+        self.web.header( 'Content-Type', 'application/json' )
+        return json_poems.POST( self.db, data )
+

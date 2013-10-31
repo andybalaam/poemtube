@@ -1,6 +1,7 @@
 
 import json
 
+from poemtube import addpoem
 from poemtube import getpoem
 from poemtube import listpoems
 
@@ -15,4 +16,14 @@ def GET( db, id ):
         return list_poems( db )
     else:
         return single_poem( db, id )
+
+def POST( db, data ):
+    parsed_data = json.loads( data )
+    return json.dumps(
+        addpoem(
+            db=db,
+            title = parsed_data["title"],
+            author= parsed_data["author"],
+            text  = parsed_data["text"] )
+        )
 

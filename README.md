@@ -32,8 +32,24 @@ Running the tests
 API usage examples
 ------------------
 
+List poems:
+
     $ curl http://localhost:8080/api/v1/poems
     ["this-is-a-photo", "a-question"]
+
+Get a poem:
+
+    $ curl http://localhost:8080/api/v1/poems/a-question
+    {"text": "A voice said, Look me in the stars\nAnd tell me truly, men of earth,\nIf all the soul-and-body scars\nWere not too much to pay for birth.\n", "title": "A Question", "id": "a-question", "author": "Robert Frost"}
+
+Add a poem:
+
+    $ curl -i --data '{"title":"Foo","author":"Bar","text":"Baz"}' http://localhost:8080/api/v1/poems
+    foo
+    $ curl http://localhost:8080/api/v1/poems/foo
+    {"text": "Baz", "title": "Foo", "id": "foo", "author": "Bar"}
+
+(To view HTTP headers, add -i:)
 
     $ curl -i http://localhost:8080/api/v1/poems
     HTTP/1.1 200 OK
@@ -43,7 +59,4 @@ API usage examples
     Server: localhost
 
     ["this-is-a-photo", "a-question"]
-
-    $ curl http://localhost:8080/api/v1/poems/a-question
-    {"text": "A voice said, Look me in the stars\nAnd tell me truly, men of earth,\nIf all the soul-and-body scars\nWere not too much to pay for birth.\n", "title": "A Question", "id": "a-question", "author": "Robert Frost"}
 
