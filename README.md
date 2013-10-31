@@ -23,7 +23,7 @@ Running the tests
 -----------------
 
     # Dependencies
-    sudo apt-get install python-nose
+    sudo apt-get install python-nose python-paste
 
     # Run all tests
     cd server/src
@@ -44,12 +44,21 @@ Get a poem:
 
 Add a poem:
 
-    $ curl -i --data '{"title":"Foo","author":"Bar","text":"Baz"}' http://localhost:8080/api/v1/poems
+    $ curl --data '{"title":"Foo","author":"Bar","text":"Baz"}' http://localhost:8080/api/v1/poems
     foo
     $ curl http://localhost:8080/api/v1/poems/foo
     {"text": "Baz", "title": "Foo", "id": "foo", "author": "Bar"}
 
-(To view HTTP headers, add -i:)
+Modify a poem:
+
+    $ curl --request PUT --data '{"title":"Foo2","author":"Bar2","text":"Baz2"}' http://localhost:8080/api/v1/poems/a-question
+    $ curl http://localhost:8080/api/v1/poems/a-question
+    {"text": "Baz2", "title": "Foo2", "id": "foo", "author": "Bar2"}
+
+Notes
+-----
+
+To see the HTTP headers, add -i in your curl requests:
 
     $ curl -i http://localhost:8080/api/v1/poems
     HTTP/1.1 200 OK

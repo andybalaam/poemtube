@@ -2,5 +2,6 @@ from urls import urls
 from listpoems import listpoems
 from getpoem import getpoem
 from addpoem import addpoem
+from modifypoem import modifypoem
 from make_id import make_id
 

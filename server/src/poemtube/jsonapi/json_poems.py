@@ -4,6 +4,10 @@ import json
 from poemtube import addpoem
 from poemtube import getpoem
 from poemtube import listpoems
+from poemtube import modifypoem
+
+from poemtube.errors import InvalidRequest
+from poemtube.jsonapi.json_errors import JsonInvalidRequest
 
 def single_poem( db, id ):
     return json.dumps( getpoem( db, id ) )
@@ -24,6 +28,22 @@ def POST( db, data ):
             db=db,
             title = parsed_data["title"],
             author= parsed_data["author"],
-            text  = parsed_data["text"] )
+            text  = parsed_data["text"]
         )
+    )
+
+def PUT( db, id, data ):
+    parsed_data = json.loads( data )
+    try:
+        modifypoem(
+            db=db,
+            id=id,
+            title = parsed_data["title"],
+            author= parsed_data["author"],
+            text  = parsed_data["text"]
+        )
+    except InvalidRequest, e:
+        raise JsonInvalidRequest( e )
+
+    return ""
 

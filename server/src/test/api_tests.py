@@ -1,74 +1,75 @@
 
+from paste.fixture import TestApp
 from nose.tools import *
+
 import json
+import web
 
 from fakedb import FakeDb
-from fakeweb import FakeWeb
 
-from poemtube.api.v1 import Poems
+import poemtube.api.v1.poems
+import poemtube.urls
+
+# Create our app
+app = web.application( poemtube.urls, {} )
+
+def test_app():
+    """
+    return new TestApp that refers to a new FakeDb, which is
+    returned as the .fakedb member of the returned object.
+    """
+    fakedb = FakeDb()
+    poemtube.api.v1.poems.default_db = fakedb
+    ret = TestApp( app.wsgifunc() )
+    ret.fakedb = fakedb
+    return ret
+
+
+def assert_successful_json_response( r ):
+    assert_equal( 200, r.status )
+    assert_equal( "application/json", r.header( "Content-Type" ) )
+    if r.body != "":
+        json.loads( r.body )
+
+def assert_failed_json_response( expected_status, r ):
+    assert_equal( expected_status, r.status )
+    assert_equal( "application/json", r.header( "Content-Type" ) )
+    if r.body != "":
+        json.loads( r.body )
+
 
 def Can_list_poems_in_json__test():
-    fakeweb = FakeWeb()
-    handler = Poems( FakeDb(), fakeweb )
-
     # This is what we are testing - list poems in JSON
-    answer = handler.GET( "" )
+    r = test_app().get( "/api/v1/poems" )
+    assert_successful_json_response( r )
 
-    # The answer should be valid JSON
-    lst = json.loads( answer )
-
-    # But not in a guaranteed order
+    # The answer should be valid JSON, but not in guaranteed order
+    lst = json.loads( r.body )
     lst.sort()
 
-    # It should be a list of ids
-    assert_equal(
-        ["id1", "id2", "id3"],
-        lst
-    )
-
-    # We set the content type correctly
-    assert_equal(
-        "application/json",
-        fakeweb.headers["Content-Type"]
-    )
+    # It should be a list of the ids in the FakeDb
+    assert_equal( ["id1", "id2", "id3"], lst )
 
 
 def Can_list_poems_in_json_with_slash_in_url__test():
-    fakeweb = FakeWeb()
-    handler = Poems( FakeDb(), fakeweb )
-
     # This is what we are testing - list poems in JSON
-    answer = handler.GET( "/" )
+    r = test_app().get( "/api/v1/poems/" )
+    assert_successful_json_response( r )
 
-    # The answer should be valid JSON
-    lst = json.loads( answer )
-
-    # But not in a guaranteed order
+    # The answer should be valid JSON, but not in guaranteed order
+    lst = json.loads( r.body )
     lst.sort()
 
-    # It should be a list of ids
-    assert_equal(
-        ["id1", "id2", "id3"],
-        lst
-    )
+    # It should be a list of the ids in the FakeDb
+    assert_equal( ["id1", "id2", "id3"], lst )
 
-    # We set the content type correctly
-    assert_equal(
-        "application/json",
-        fakeweb.headers["Content-Type"]
-    )
 
 def Can_get_single_poem_in_json__test():
-    fakeweb = FakeWeb()
-    handler = Poems( FakeDb(), fakeweb )
-
     # This is what we are testing - get a poem
-    jans = handler.GET( "/id1" )
+    r = test_app().get( "/api/v1/poems/id1" )
+    assert_successful_json_response( r )
 
-    # The answer should be valid JSON
-    ans = json.loads( jans )
-
-    # It should be a list of ids
+    # We get back the details of a poem
     assert_equal(
         {
             "id"     : "id1",
@@ -76,38 +77,74 @@ def Can_get_single_poem_in_json__test():
             "author" : "author1",
             "text"   : "text1",
         },
-        ans
+        json.loads( r.body )
     )
 
-    assert_equal(
-        "application/json",
-        fakeweb.headers["Content-Type"]
-    )
 
 def Can_add_new_poem_in_json__test():
-    fakeweb = FakeWeb()
-    fakedb = FakeDb()
-    handler = Poems( fakedb, fakeweb )
-
     poem = {
         "title"  : "My New Poem",
         "author" : "Frank Black",
         "text"   : "Soda spoke\n  softly\nSoda\n"
     }
 
-    fakeweb.inp = json.dumps( poem )
-
     # This is what we are testing - add a poem
-    jans = handler.POST( "/" )
+    app = test_app()
+    r = app.post( "/api/v1/poems", params=json.dumps( poem ) )
+    assert_successful_json_response( r )
 
-    # The answer should be valid JSON
-    ans = json.loads( jans )
-
-    # It should be the id of the new poem
-    assert_equal( "my-new-poem", ans )
+    # We should have responded with the id of the new poem
+    newid = json.loads( r.body )
+    assert_equal( "my-new-poem", newid )
 
     # And the database should have the poem added
-    assert_equal( poem, fakedb.poems[ans] )
+    assert_equal( poem, app.fakedb.poems[newid] )
+
+
+def Can_replace_existing_poem_in_json__test():
+    poem = {
+        "title"   : "modtitle2",
+        "author"  : "modauthor2",
+        "text"    : "modtext2"
+    }
+
+    app = test_app()
+
+    # Sanity - the original poem exists
+    assert_equal( "title2", app.fakedb.poems["id2"]["title"] )
+
+    # This is what we are testing - modify an existing poem
+    r = app.put( "/api/v1/poems/id2", params=json.dumps( poem ) )
+    assert_successful_json_response( r )
+
+    # The response is empty
+    assert_equal( "", r.body )
+
+    # The database should have new version of the poem
+    assert_equal( poem, app.fakedb.poems["id2"] )
+
+
+def Replacing_a_nonexistent_poem_returns_error_response__test():
+    poem = { "title":"t", "author":"a", "text": "x" }
+
+    # This is what we are testing
+    r = test_app().put(
+        "/api/v1/poems/nonexistentid",
+        params=json.dumps( poem ),
+        expect_errors=True
+    )
+
+    # The request failed
+    assert_failed_json_response( 404, r )
+
+    # We received an error message
+    assert_equal(
+        {
+            'error': '"nonexistentid" is not the ID of an existing poem.'
+        },
+        json.loads( r.body )
+    )
+
 
 
 # TODO: error conditions:

@@ -5,6 +5,7 @@ import json
 from fakedb import FakeDb
 
 from poemtube.jsonapi import json_poems
+from poemtube.jsonapi.json_errors import JsonInvalidRequest
 
 def Can_list_poems__test():
     # This is what we are testing
@@ -57,5 +58,38 @@ def Can_add_a_new_poem__test():
         "Sometimes, sometimes\nSometimes.\n",
         db.poems[id]["text"]
     )
+
+def Can_replace_an_existing_poem__test():
+    db = FakeDb()
+
+    newpoem = {
+        "title"  : "A Poem",
+        "author" : "Andy Balaam",
+        "text"   : "Sometimes, sometimes\nSometimes.\n"
+    }
+    json_poems.PUT( db, "id3", json.dumps( newpoem ) )
+
+def Replacing_an_invalid_id_is_an_error__test():
+    db = FakeDb()
+
+    newpoem = {
+        "title"  : "A Poem",
+        "author" : "Andy Balaam",
+        "text"   : "Sometimes, sometimes\nSometimes.\n"
+    }
+    caught_exception = None
+    try:
+        json_poems.PUT( db, "nonexistid", json.dumps( newpoem ) )
+    except JsonInvalidRequest, e:
+        caught_exception = e
+
+    assert_is_not_none( caught_exception )
+
+    assert_equal(
+        { 'error': '"nonexistid" is not the ID of an existing poem.' },
+        json.loads( str( caught_exception ) )
+    )
+
+
 
 

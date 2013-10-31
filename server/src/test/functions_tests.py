@@ -4,6 +4,7 @@ from nose.tools import *
 from fakedb import FakeDb
 
 import poemtube.listpoems
+from poemtube.errors import InvalidRequest
 
 def Can_list_all_poems__test():
     answer = poemtube.listpoems( FakeDb() )
@@ -50,4 +51,21 @@ def Id_replaces_nonalphanum_with_dashes__test():
                                       "hello-world----------------------------",
         poemtube.make_id( FakeDb(), """hello world?:{}[]"'+=-_)(*&^%$"!.,<>/@~""" )
     )
+
+def Can_replace_an_existing_poem__test():
+    db = FakeDb()
+    poemtube.modifypoem(
+        db, "id1", title="title X", author="author X", text="text X" )
+
+    modentry = db.poems["id1"]
+
+    assert_equal( "title X",  modentry["title"] )
+    assert_equal( "author X", modentry["author"] )
+    assert_equal( "text X",   modentry["text"] )
+
+@raises( InvalidRequest )
+def Replacing_a_nonexistent_poem_is_an_error__test():
+    db = FakeDb()
+    poemtube.modifypoem(
+        db, "nonexistid", title="title X", author="author X", text="text X" )
 
