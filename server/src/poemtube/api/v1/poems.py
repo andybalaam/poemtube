@@ -43,7 +43,8 @@ class Poems:
         self.db = get_db()
 
     def GET( self, urlid ):
-        return do_json( json_poems.GET, self.db, clean_id( urlid ) )
+        return do_json(
+            json_poems.GET, self.db, clean_id( urlid ), web.input() )
 
     def POST( self, urlid ):
         return do_json( json_poems.POST, self.db, web.data() )

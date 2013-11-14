@@ -20,6 +20,46 @@ def Can_list_poems__test():
         lst
     )
 
+def Can_list_n_poems__test():
+    # This is what we are testing
+    j = json_poems.GET( FakeDb(), "", { "count": "2" } )
+
+    # We got back the number we asked for
+    lst = json.loads( j )
+    assert_equal( 2, len( lst ) )
+
+def Nonnumeric_count_is_an_error__test():
+    caught_exception = None
+    try:
+        json_poems.GET( FakeDb(), "", { "count": "2foo" } )
+    except JsonInvalidRequest, e:
+        caught_exception = e
+
+    assert_is_not_none( caught_exception )
+
+    assert_equal(
+        { 'error': '"2foo" is an invalid value for count.' },
+        json.loads( str( caught_exception ) )
+    )
+
+    assert_equal( 400, caught_exception.suggested_code )
+
+def Negative_count_is_an_error__test():
+    caught_exception = None
+    try:
+        json_poems.GET( FakeDb(), "", { "count": "-2" } )
+    except JsonInvalidRequest, e:
+        caught_exception = e
+
+    assert_is_not_none( caught_exception )
+
+    assert_equal(
+        { 'error': '"-2" is an invalid value for count.' },
+        json.loads( str( caught_exception ) )
+    )
+
+    assert_equal( 400, caught_exception.suggested_code )
+
 def Can_get_single_poem__test():
     # This is what we are testing
     j = json_poems.GET( FakeDb(), "id3" )

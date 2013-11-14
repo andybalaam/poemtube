@@ -11,8 +11,20 @@ from poemtube import replacepoem
 from poemtube.errors import InvalidRequest
 from poemtube.jsonapi.json_errors import JsonInvalidRequest
 
-def my_listpoems( db ):
-    return list( listpoems( db ) )
+def my_listpoems( db, queryparams ):
+    if "count" in queryparams:
+        count_str = queryparams["count"]
+        try:
+            count = int( count_str )
+        except ValueError, e:
+            raise JsonInvalidRequest(
+                InvalidRequest(
+                    '"%s" is an invalid value for count.' % count_str, 400
+                )
+            )
+    else:
+        count = None
+    return list( listpoems( db, count=count ) )
 
 
 def my_replacepoem( db, id, title, author, text ):
@@ -41,9 +53,9 @@ def do( fn, *args, **kwargs ):
         raise JsonInvalidRequest( e )
 
 
-def GET( db, id ):
+def GET( db, id, query_params={} ):
     if id == "":
-        return do( my_listpoems, db )
+        return do( my_listpoems, db, query_params )
     else:
         return do( getpoem, db, id )
 

@@ -13,6 +13,21 @@ def Can_list_all_poems__test():
         set( answer )
     )
 
+def Can_list_a_specified_number_of_poems__test():
+    answer = poemtube.listpoems( FakeDb(), count=2 )
+    assert_equal( 2, len( list( answer ) ) )
+
+    answer = poemtube.listpoems( FakeDb(), count=1 )
+    assert_equal( 1, len( list( answer ) ) )
+
+def Listing_asking_for_too_many_returns_all__test():
+    answer = poemtube.listpoems( FakeDb(), count=200 )
+    assert_equal( 3, len( list( answer ) ) )
+
+@raises( InvalidRequest )
+def Listing_asking_for_negative_is_an_error__test():
+    poemtube.listpoems( FakeDb(), count=-1 )
+
 def Can_get_an_individual_poem__test():
     answer = poemtube.getpoem( FakeDb(), "id2" )
 

@@ -53,6 +53,32 @@ def Can_list_poems_in_json__test():
     assert_equal( ["id1", "id2", "id3"], lst )
 
 
+def Can_list_n_poems_in_json__test():
+    # This is what we are testing - list poems in JSON
+    r = test_app().get( "/api/v1/poems?count=2" )
+    assert_successful_json_response( r )
+
+    # The answer should be valid JSON, but not in guaranteed order
+    lst = json.loads( r.body )
+
+    # It should be a list of the ids in the FakeDb
+    assert_equal( 2, len( lst ) )
+
+
+def Listing_with_invalid_count_responds_with_error__test():
+    # This is what we are testing
+    r = test_app().get( "/api/v1/poems?count=2k", expect_errors=True )
+    assert_failed_json_response( 400, r )
+
+    # We received an error message
+    assert_equal(
+        {
+            'error': '"2k" is an invalid value for count.'
+        },
+        json.loads( r.body )
+    )
+
+
 def Can_list_poems_in_json_with_slash_in_url__test():
     # This is what we are testing - list poems in JSON
     r = test_app().get( "/api/v1/poems/" )
