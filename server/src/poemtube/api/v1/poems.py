@@ -1,13 +1,8 @@
 import web
 
-from poemtube.db import MemoryDb
+import poemtube.db.which_db
 from poemtube.jsonapi import json_poems
 from poemtube.jsonapi.json_errors import JsonInvalidRequest
-
-# Overwrite this in tests to use a fake db
-default_db = MemoryDb()
-def get_db():
-    return default_db
 
 def http_error( e ):
     """
@@ -40,7 +35,7 @@ def do_json( fn, *args ):
 
 class Poems:
     def __init__( self ):
-        self.db = get_db()
+        self.db = poemtube.db.which_db.get_db()
 
     def GET( self, urlid ):
         return do_json(

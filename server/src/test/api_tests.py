@@ -23,7 +23,7 @@ def test_app():
     returned as the .fakedb member of the returned object.
     """
     fakedb = FakeDb()
-    poemtube.api.v1.poems.default_db = fakedb
+    poemtube.db.which_db.db = fakedb
     ret = TestApp( app.wsgifunc() )
     ret.fakedb = fakedb
     return ret
@@ -141,7 +141,7 @@ def Can_add_new_poem_in_json__test():
     assert_equal( "my-new-poem", newid )
 
     # And the database should have the poem added
-    assert_equal( poem, app.fakedb.poems[newid] )
+    assert_equal( poem, app.fakedb.poems.data[newid] )
 
 
 def Can_replace_existing_poem_in_json__test():
@@ -154,7 +154,7 @@ def Can_replace_existing_poem_in_json__test():
     app = test_app()
 
     # Sanity - the original poem exists
-    assert_equal( "title2", app.fakedb.poems["id2"]["title"] )
+    assert_equal( "title2", app.fakedb.poems.data["id2"]["title"] )
 
     # This is what we are testing - modify an existing poem
     r = app.put( "/api/v1/poems/id2", params=json.dumps( poem ) )
@@ -164,7 +164,7 @@ def Can_replace_existing_poem_in_json__test():
     assert_equal( "", json.loads( r.body ) )
 
     # The database should have new version of the poem
-    assert_equal( poem, app.fakedb.poems["id2"] )
+    assert_equal( poem, app.fakedb.poems.data["id2"] )
 
 
 def Replacing_a_nonexistent_poem_returns_error_response__test():
@@ -253,7 +253,7 @@ def Can_amend_an_existing_poem__test():
             "author": "Me",
             "text"  : "my peom\nis    misspelt.\n"
         },
-        app.fakedb.poems["id2"]
+        app.fakedb.poems.data["id2"]
     )
 
 def Amending_a_nonexistent_poem_returns_an_error__test():

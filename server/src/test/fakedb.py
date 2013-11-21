@@ -1,8 +1,9 @@
+from poemtube.db import MemoryDb
 
-
-class FakeDb( object ):
+class FakeDb( MemoryDb ):
     def __init__( self ):
-        self.poems = {
+        MemoryDb.__init__( self )
+        self.poems.data = {
             "id1" : {
                 "author" : "author1",
                 "title"  : "title1",

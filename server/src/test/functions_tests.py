@@ -59,7 +59,7 @@ def Can_add_a_new_poem__test():
 
     assert_equal( "title-x", id )
 
-    newentry = db.poems[id]
+    newentry = db.poems.data[id]
 
     assert_equal( "title X", newentry["title"] )
     assert_equal( "author X", newentry["author"] )
@@ -88,7 +88,7 @@ def Can_replace_an_existing_poem__test():
     poemtube.replacepoem(
         db, "id1", title="title X", author="author X", text="text X" )
 
-    modentry = db.poems["id1"]
+    modentry = db.poems.data["id1"]
 
     assert_equal( "title X",  modentry["title"] )
     assert_equal( "author X", modentry["author"] )
@@ -127,7 +127,7 @@ def Can_amend_a_poem_title__test():
             "author" : "author1",
             "text"   : "text1"
         },
-        db.poems["id1"]
+        db.poems.data["id1"]
     )
 
     # This is what we are testing
@@ -140,7 +140,7 @@ def Can_amend_a_poem_title__test():
             "author" : "author1",
             "text"   : "text1"
         },
-        db.poems["id1"]
+        db.poems.data["id1"]
     )
 
 def Can_amend_a_poem_author__test():
@@ -156,7 +156,7 @@ def Can_amend_a_poem_author__test():
             "author" : "author X",
             "text"   : "text1"
         },
-        db.poems["id1"]
+        db.poems.data["id1"]
     )
 
 def Can_amend_a_poem_text__test():
@@ -172,7 +172,7 @@ def Can_amend_a_poem_text__test():
             "author" : "author2",
             "text"   : "text X"
         },
-        db.poems["id2"]
+        db.poems.data["id2"]
     )
 
 
@@ -189,7 +189,7 @@ def Can_amend_a_poem_multiple__test():
             "author" : "author X",
             "text"   : "text X"
         },
-        db.poems["id1"]
+        db.poems.data["id1"]
     )
 
 

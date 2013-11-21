@@ -8,5 +8,7 @@ def getpoem( db, id ):
             '"%s" is not the ID of an existing poem.' % id, 404 )
     ans = copy( db.poems[id] )
     ans["id"] = id
+    del ans["_id"]
+    del ans["_rev"]
     return ans
 

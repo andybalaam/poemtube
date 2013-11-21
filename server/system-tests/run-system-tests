@@ -1,0 +1,36 @@
+#!/bin/bash
+
+HERE=$PWD
+
+echo "Running system tests using in-memory db ..."
+
+cd ../src
+python poemtube-dev.py 8080 --db=memory &
+
+cd $HERE
+nosetests
+
+RETVAL=$?
+kill %1
+
+if [ "$RETVAL" != "0" ]; then exit $RETVAL; fi
+
+echo "In-memory tests passed."
+echo
+echo "Running system tests using real couchdb ..."
+
+cd ../src
+python setup/install.py --prefix=systest- --delete
+python poemtube-dev.py 8080 --db=couch --prefix=systest- &
+
+cd $HERE
+nosetests
+
+RETVAL=$?
+kill %1
+
+if [ "$RETVAL" != "0" ]; then exit $RETVAL; fi
+
+echo "Couchdb tests passed."
+echo
+echo "All tests passed."

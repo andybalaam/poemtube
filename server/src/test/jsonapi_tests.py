@@ -133,7 +133,7 @@ def Can_replace_an_existing_poem__test():
     json_poems.PUT( db, "id3", json.dumps( newpoem ) )
 
     # The poem was replaced with what we supplied
-    assert_equal( newpoem, db.poems["id3"] )
+    assert_equal( newpoem, db.poems.data["id3"] )
 
 
 def Replacing_an_invalid_id_is_an_error__test():
@@ -211,7 +211,7 @@ def Can_amend_an_existing_poem__test():
             "author" : "author1",
             "text"   : "Sometimes, sometimes\nSometimes.\n"
         },
-        db.poems["id1"]
+        db.poems.data["id1"]
     )
 
 

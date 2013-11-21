@@ -12,6 +12,8 @@ def amendpoem( db, id, newprops ):
             '"%s" is not the ID of an existing poem.' % id, 404 )
 
     newdoc = copy( db.poems[id] )
+    del newdoc["_id"]
+    del newdoc["_rev"]
 
     for k in newprops:
         if not known_prop( k ):
