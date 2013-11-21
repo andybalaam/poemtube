@@ -24,6 +24,18 @@ def Listing_asking_for_too_many_returns_all__test():
     answer = poemtube.listpoems( FakeDb(), count=200 )
     assert_equal( 3, len( list( answer ) ) )
 
+def Can_list_starting_after_an_id__test():
+    answer = list( poemtube.listpoems( FakeDb(), since_id="id2" ) )
+    # We don't know what order they will come back in, but even
+    # if id2 is first, we'll get one less
+    assert_true( len( answer ) < 3 )
+    print answer
+    assert_true( "id2" not in answer )
+
+
+def Listing_asking_for_too_many_returns_all__test():
+    answer = poemtube.listpoems( FakeDb(), count=200 )
+    assert_equal( 3, len( list( answer ) ) )
 @raises( InvalidRequest )
 def Listing_asking_for_negative_is_an_error__test():
     poemtube.listpoems( FakeDb(), count=-1 )
