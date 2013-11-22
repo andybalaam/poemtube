@@ -7,12 +7,11 @@ Getting started
 ---------------
 
     # Dependencies:
-    sudo apt-get install python python-webpy     # for the server
-    sudo apt-get install pythoh python-requests  # for the client tools
+    sudo apt-get install python-webpy python-couchdb python-requests
 
-    # Start the server
+    # Start the server (with an in-memory database)
     cd server/src
-    ./poemtube-dev.py
+    ./poemtube-dev-memory.py
 
     # In another terminal, run the client programs
     cd client/src
@@ -25,17 +24,26 @@ Running the tests
     # Dependencies
     sudo apt-get install python-nose python-paste
 
-    # Run all tests
+    # Run unit tests
     cd server/src
     nosetests
+
+    # Run system tests (requires a local running couch db)
+    cd server/system-tests
+    make test
 
 API usage examples
 ------------------
 
+Start the server (+ sample data) with:
+
+    $ cd server/src
+    $ ./poemtube-dev-memory.py
+
 List poems:
 
     $ curl http://localhost:8080/api/v1/poems
-    ["this-is-a-photo", "a-question"]
+    ["a-question", "this-is-a-photograph-of-me"]
 
 Get a poem:
 
