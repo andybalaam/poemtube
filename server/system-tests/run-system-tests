@@ -2,6 +2,10 @@
 
 HERE=$PWD
 
+echo "Running all unit tests ..."
+nosetests -w ../src || exit 1
+echo "Unit tests passed"
+echo
 echo "Running system tests using in-memory db ..."
 
 python ../src/poemtube-dev-memory.py &
