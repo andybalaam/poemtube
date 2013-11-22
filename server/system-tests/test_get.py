@@ -2,8 +2,6 @@ import requests
 
 from nose.tools import *
 
-import systest.setup
-
 def Get_a_single_sample_poem__test():
 
     r = requests.get( "http://0.0.0.0:8080/api/v1/poems/a-question" )
