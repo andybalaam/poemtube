@@ -83,6 +83,26 @@ Amend a poem:
     $ curl http://localhost:8080/api/v1/poems/a-question
     {"text": "Cheer up", "title": "A Question", "id": "a-question", "author": "Robert Frost"}
 
+Launching in different modes
+----------------------------
 
+To run against a real running CouchDB instance (on localhost):
+
+    sudo service couchdb start
+    cd server/src
+    ./poemtube-dev-couch.py
+
+To run as a FastCGI process against a real CouchDB (on localhost):
+
+    sudo service couchdb start
+    cd server/src
+    ./poemtube-prod.py
+
+To run with no dependency on CouchDB (using an in-memory database), with some sample data:
+
+    cd server/src
+    ./poemtube-dev-memory.py
+
+The other launcher, "poemtube-systest.py" is used by the system tests to launch against a real CouchDB, but with a prefix for all table names to avoid overwriting real data.
 
 
