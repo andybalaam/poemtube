@@ -4,16 +4,13 @@ HERE=$PWD
 
 echo "Running system tests using in-memory db ..."
 
-TMPFILE=`mktemp -d` || exit 1
-cd $TMPFILE || exit 1
-python $HERE/../src/poemtube-dev.py &
+python ../src/poemtube-dev-memory.py &
+sleep 1
 
-cd $HERE
 nosetests
-
 RETVAL=$?
+
 kill %1
-rm -rf $TMPFILE
 
 if [ "$RETVAL" != "0" ]; then exit $RETVAL; fi
 
@@ -21,18 +18,15 @@ echo "In-memory tests passed."
 echo
 echo "Running system tests using real couchdb ..."
 
-TMPFILE=`mktemp -d` || exit 1
-cd $TMPFILE || exit 1
-echo '{"db": "couch", "prefix": "systest-"}' > config.json
-python $HERE/../src/setup/install.py --prefix=systest- --delete || exit 1
-python $HERE/../src/poemtube-dev.py &
+python ../src/setup/install.py --prefix=systest- --delete || exit 1
+python ../src/poemtube-systest.py &
+sleep 1
 
 cd $HERE
 nosetests
 
 RETVAL=$?
 kill %1
-rm -rf $TMPFILE
 
 if [ "$RETVAL" != "0" ]; then exit $RETVAL; fi
 

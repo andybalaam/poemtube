@@ -1,11 +1,9 @@
-import json
-import requests
-
-from nose.tools import *
+import poemtube.db.which_db
 
 sample_data = [
 
     {
+        "id": "a-question",
         "title": "A Question",
         "text":
             "A voice said, Look me in the stars\n" +
@@ -16,6 +14,7 @@ sample_data = [
     },
 
     {
+        "id": "this-is-a-photograph-of-me",
         "title": "This Is A Photograph Of Me",
         "text":
             "It was taken some time ago.\n" +
@@ -54,13 +53,9 @@ sample_data = [
     }
 ]
 
-def insert_sample_data():
 
+def insert():
+    db = poemtube.db.which_db.get_db()
     for doc in sample_data:
-        r = requests.post(
-            "http://0.0.0.0:8080/api/v1/poems",
-            json.dumps( doc )
-        )
-
-        assert_equal( 200, r.status_code )
+        db.poems[doc["id"]] = doc
 

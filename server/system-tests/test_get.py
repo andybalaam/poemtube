@@ -6,8 +6,6 @@ import systest.setup
 
 def Get_a_single_sample_poem__test():
 
-    systest.setup.insert_sample_data()
-
     r = requests.get( "http://0.0.0.0:8080/api/v1/poems/a-question" )
 
     assert_equal( 200, r.status_code )
