@@ -36,9 +36,32 @@ def Can_list_starting_after_an_id__test():
 def Listing_asking_for_too_many_returns_all__test():
     answer = poemtube.listpoems( FakeDb(), count=200 )
     assert_equal( 3, len( list( answer ) ) )
+
 @raises( InvalidRequest )
 def Listing_asking_for_negative_is_an_error__test():
     poemtube.listpoems( FakeDb(), count=-1 )
+
+
+def Searching_for_an_author_returns_their_poems__test():
+    db = FakeDb()
+    id1 = poemtube.addpoem( db, title="t1", author="fred 1", text="t1" )
+    id2 = poemtube.addpoem( db, title="t2", author="fred 2", text="t2" )
+    id3 = poemtube.addpoem( db, title="t3", author="fred 1", text="t3" )
+    id4 = poemtube.addpoem( db, title="t4", author="fred 3", text="t4" )
+    id5 = poemtube.addpoem( db, title="t5", author="fred 1", text="t5" )
+
+    # This is what we are testing
+    answer = poemtube.listpoems( db, search="fred 1" )
+
+    # Take the first 3 - theoretically there might be others
+    first_3 = list( answer )[:3]
+
+    # We got back the 3 poems by this author
+    assert_equal( id1, first_3[0] )
+    assert_equal( id3, first_3[1] )
+    assert_equal( id5, first_3[2] )
+
+
 
 def Can_get_an_individual_poem__test():
     answer = poemtube.getpoem( FakeDb(), "id2" )

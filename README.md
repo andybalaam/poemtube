@@ -45,6 +45,11 @@ List poems:
     $ curl http://localhost:8080/api/v1/poems
     ["a-question", "this-is-a-photograph-of-me"]
 
+Search:
+
+    $ curl http://localhost:8080/api/v1/poems?search=Robert%20Frost
+    ["a-question"]
+
 Get a poem:
 
     $ curl http://localhost:8080/api/v1/poems/a-question

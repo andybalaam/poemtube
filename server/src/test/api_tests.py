@@ -65,6 +65,17 @@ def Can_list_n_poems_in_json__test():
     assert_equal( 2, len( lst ) )
 
 
+def Searching_for_an_author_returns_their_poems__test():
+    # This is what we are testing - search for poems by author1
+    r = test_app().get( "/api/v1/poems?search=author3" )
+    assert_successful_json_response( r )
+
+    # We should get back a poem by this author
+    lst = json.loads( r.body )
+    print lst
+    assert_equal( "id3", lst[0] )
+
+
 def Listing_with_invalid_count_responds_with_error__test():
     # This is what we are testing
     r = test_app().get( "/api/v1/poems?count=2k", expect_errors=True )

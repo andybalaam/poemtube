@@ -60,6 +60,34 @@ def Negative_count_is_an_error__test():
 
     assert_equal( 400, caught_exception.suggested_code )
 
+
+def Searching_for_an_author_returns_their_poems__test():
+    db = FakeDb()
+
+    p1 = { "title"  : "ti1", "author" : "Sara",   "text" : "" }
+    p2 = { "title"  : "ti2", "author" : "Jose",   "text" : "" }
+    p3 = { "title"  : "ti3", "author" : "Sara",   "text" : "" }
+    p4 = { "title"  : "ti4", "author" : "Chinua", "text" : "" }
+    p5 = { "title"  : "ti5", "author" : "Sara",   "text" : "" }
+
+    id1 = json.loads( json_poems.POST( db, json.dumps( p1 ) ) )
+    id2 = json.loads( json_poems.POST( db, json.dumps( p2 ) ) )
+    id3 = json.loads( json_poems.POST( db, json.dumps( p3 ) ) )
+    id4 = json.loads( json_poems.POST( db, json.dumps( p4 ) ) )
+    id5 = json.loads( json_poems.POST( db, json.dumps( p5 ) ) )
+
+    # This is what we are testing
+    j = json_poems.GET( db, "", { "search": "Sara" } )
+
+    # Parse the answer - should be valid JSON, then clip to 3 results
+    ans = json.loads( j )[:3]
+
+    # We got back the 3 poems by Sara
+    assert_equal( id1, ans[0] )
+    assert_equal( id3, ans[1] )
+    assert_equal( id5, ans[2] )
+
+
 def Can_get_single_poem__test():
     # This is what we are testing
     j = json_poems.GET( FakeDb(), "id3" )

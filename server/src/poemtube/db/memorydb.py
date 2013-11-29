@@ -19,6 +19,18 @@ class FakeCouchDatabase( object ):
     def __delitem__( self, key ):
         del self.data[key]
 
+    def query( self, map_fun ):
+        # Hack to simulate couchdb query for author
+        tofind = "doc.author === '"
+        pos = map_fun.find( tofind )
+        pos += len( tofind )
+        endpos = map_fun.find( "'", pos + 1 )
+        auth = map_fun[ pos: endpos ]
+
+        return sorted( list(
+            { "value": id } for id in self if self[id]['author'] == auth ) )
+
+
 class MemoryDb( object ):
     def __init__( self ):
         self.poems = FakeCouchDatabase()

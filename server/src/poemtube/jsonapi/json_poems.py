@@ -24,7 +24,13 @@ def my_listpoems( db, queryparams ):
             )
     else:
         count = None
-    return list( listpoems( db, count=count ) )
+
+    if "search" in queryparams:
+        search = queryparams["search"]
+    else:
+        search = None
+
+    return list( listpoems( db, count=count, search=search ) )
 
 
 def my_replacepoem( db, id, title, author, text ):
