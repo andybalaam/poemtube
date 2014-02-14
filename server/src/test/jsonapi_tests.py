@@ -9,7 +9,7 @@ from poemtube.jsonapi.json_errors import JsonInvalidRequest
 
 def Can_list_poems__test():
     # This is what we are testing
-    j = json_poems.GET( FakeDb(), "" )
+    j = json_poems.GET( FakeDb(), "", user=None )
 
     # Parse it and sort the answer
     lst = json.loads( j )
@@ -22,7 +22,7 @@ def Can_list_poems__test():
 
 def Can_list_n_poems__test():
     # This is what we are testing
-    j = json_poems.GET( FakeDb(), "", { "count": "2" } )
+    j = json_poems.GET( FakeDb(), "", None, { "count": "2" } )
 
     # We got back the number we asked for
     lst = json.loads( j )
@@ -31,7 +31,7 @@ def Can_list_n_poems__test():
 def Nonnumeric_count_is_an_error__test():
     caught_exception = None
     try:
-        json_poems.GET( FakeDb(), "", { "count": "2foo" } )
+        json_poems.GET( FakeDb(), "", None, { "count": "2foo" } )
     except JsonInvalidRequest, e:
         caught_exception = e
 
@@ -47,7 +47,7 @@ def Nonnumeric_count_is_an_error__test():
 def Negative_count_is_an_error__test():
     caught_exception = None
     try:
-        json_poems.GET( FakeDb(), "", { "count": "-2" } )
+        json_poems.GET( FakeDb(), "", None, { "count": "-2" } )
     except JsonInvalidRequest, e:
         caught_exception = e
 
@@ -70,14 +70,14 @@ def Searching_for_an_author_returns_their_poems__test():
     p4 = { "title"  : "ti4", "author" : "Chinua", "text" : "" }
     p5 = { "title"  : "ti5", "author" : "Sara",   "text" : "" }
 
-    id1 = json.loads( json_poems.POST( db, json.dumps( p1 ) ) )
-    id2 = json.loads( json_poems.POST( db, json.dumps( p2 ) ) )
-    id3 = json.loads( json_poems.POST( db, json.dumps( p3 ) ) )
-    id4 = json.loads( json_poems.POST( db, json.dumps( p4 ) ) )
-    id5 = json.loads( json_poems.POST( db, json.dumps( p5 ) ) )
+    id1 = json.loads( json_poems.POST( db, json.dumps( p1 ), "user1" ) )
+    id2 = json.loads( json_poems.POST( db, json.dumps( p2 ), "user1" ) )
+    id3 = json.loads( json_poems.POST( db, json.dumps( p3 ), "user1" ) )
+    id4 = json.loads( json_poems.POST( db, json.dumps( p4 ), "user1" ) )
+    id5 = json.loads( json_poems.POST( db, json.dumps( p5 ), "user1" ) )
 
     # This is what we are testing
-    j = json_poems.GET( db, "", { "search": "Sara" } )
+    j = json_poems.GET( db, "", None, { "search": "Sara" } )
 
     # Parse the answer - should be valid JSON, then clip to 3 results
     ans = json.loads( j )[:3]
@@ -90,7 +90,7 @@ def Searching_for_an_author_returns_their_poems__test():
 
 def Can_get_single_poem__test():
     # This is what we are testing
-    j = json_poems.GET( FakeDb(), "id3" )
+    j = json_poems.GET( FakeDb(), "id3", None )
 
     # Parse the answer - should be valid JSON
     ans = json.loads( j )
@@ -103,7 +103,7 @@ def Can_get_single_poem__test():
 def Getting_a_nonexistent_poem_is_an_error__test():
     caught_exception = None
     try:
-        json_poems.GET( FakeDb(), "nonexistid" )
+        json_poems.GET( FakeDb(), "nonexistid", None )
     except JsonInvalidRequest, e:
         caught_exception = e
 
@@ -124,7 +124,7 @@ def Can_add_a_new_poem__test():
         "author" : "Andy Balaam",
         "text"   : "Sometimes, sometimes\nSometimes.\n"
     }
-    j = json_poems.POST( db, json.dumps( newpoem ) )
+    j = json_poems.POST( db, json.dumps( newpoem ), "user2" )
 
     id = json.loads( j )
     assert_equals( "a-poem", id )
@@ -144,6 +144,10 @@ def Can_add_a_new_poem__test():
         db.poems[id]["text"]
     )
 
+    assert_equals(
+        "user2",
+        db.poems[id]["contributor"]
+    )
 
 def Can_replace_an_existing_poem__test():
     db = FakeDb()
@@ -152,13 +156,14 @@ def Can_replace_an_existing_poem__test():
     assert_equal( "title3", db.poems["id3"]["title"] )
 
     newpoem = {
-        "title"  : "A Poem",
-        "author" : "Andy Balaam",
-        "text"   : "Sometimes, sometimes\nSometimes.\n"
+        "title"       : "A Poem",
+        "author"      : "Andy Balaam",
+        "text"        : "Sometimes, sometimes\nSometimes.\n",
+        "contributor" : "user3"
     }
 
     # This is what we are testing
-    json_poems.PUT( db, "id3", json.dumps( newpoem ) )
+    json_poems.PUT( db, "id3", json.dumps( newpoem ), "user3" )
 
     # The poem was replaced with what we supplied
     assert_equal( newpoem, db.poems.data["id3"] )
@@ -174,7 +179,7 @@ def Replacing_an_invalid_id_is_an_error__test():
     }
     caught_exception = None
     try:
-        json_poems.PUT( db, "nonexistid", json.dumps( newpoem ) )
+        json_poems.PUT( db, "nonexistid", json.dumps( newpoem ), "user3" )
     except JsonInvalidRequest, e:
         caught_exception = e
 
@@ -195,7 +200,7 @@ def Can_delete_an_existing_poem__test():
     assert_equal( "title1", db.poems["id1"]["title"] )
 
     # This is what we are testing
-    json_poems.DELETE( db, "id1" )
+    json_poems.DELETE( db, "id1", "user1" )
 
     # It no longer exists
     assert_false( "id1" in db.poems )
@@ -204,7 +209,7 @@ def Can_delete_an_existing_poem__test():
 def Deleting_an_invalid_id_is_an_error__test():
     caught_exception = None
     try:
-        json_poems.DELETE( FakeDb(), "nonexistid" )
+        json_poems.DELETE( FakeDb(), "nonexistid", "user1" )
     except JsonInvalidRequest, e:
         caught_exception = e
 
@@ -230,14 +235,15 @@ def Can_amend_an_existing_poem__test():
     }
 
     # This is what we are testing
-    json_poems.PATCH( db, "id1", json.dumps( mods ) )
+    json_poems.PATCH( db, "id1", json.dumps( mods ), "user1" )
 
     # The poem was replaced with what we supplied
     assert_equal(
         {
-            "title"  : "A Poem",
-            "author" : "author1",
-            "text"   : "Sometimes, sometimes\nSometimes.\n"
+            "title"       : "A Poem",
+            "author"      : "author1",
+            "text"        : "Sometimes, sometimes\nSometimes.\n",
+            "contributor" : "user1"
         },
         db.poems.data["id1"]
     )
@@ -252,7 +258,7 @@ def Amending_with_invalid_properties_is_an_error__test():
 
     caught_exception = None
     try:
-        json_poems.PATCH( db, "id3", json.dumps( newprops ) )
+        json_poems.PATCH( db, "id3", json.dumps( newprops ), "user3" )
     except JsonInvalidRequest, e:
         caught_exception = e
 
@@ -274,7 +280,7 @@ def Amending_an_invalid_id_is_an_error__test():
     }
     caught_exception = None
     try:
-        json_poems.PATCH( db, "nonexistid", json.dumps( newpoem ) )
+        json_poems.PATCH( db, "nonexistid", json.dumps( newpoem ), "user3" )
     except JsonInvalidRequest, e:
         caught_exception = e
 

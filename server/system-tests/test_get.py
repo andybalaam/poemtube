@@ -12,7 +12,7 @@ def Get_a_single_sample_poem__test():
     body = r.json
 
     assert_equal(
-        [ "author", "id", "text", "title" ],
+        [ "author", "contributor", "id", "text", "title" ],
         sorted( ( k for k in body ) )
     )
 

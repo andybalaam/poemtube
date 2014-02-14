@@ -44,11 +44,16 @@ def Listing_asking_for_negative_is_an_error__test():
 
 def Searching_for_an_author_returns_their_poems__test():
     db = FakeDb()
-    id1 = poemtube.addpoem( db, title="t1", author="fred 1", text="t1" )
-    id2 = poemtube.addpoem( db, title="t2", author="fred 2", text="t2" )
-    id3 = poemtube.addpoem( db, title="t3", author="fred 1", text="t3" )
-    id4 = poemtube.addpoem( db, title="t4", author="fred 3", text="t4" )
-    id5 = poemtube.addpoem( db, title="t5", author="fred 1", text="t5" )
+    id1 = poemtube.addpoem(
+        db, title="t1", author="fred 1", text="t1", user="user1" )
+    id2 = poemtube.addpoem(
+        db, title="t2", author="fred 2", text="t2", user="user1" )
+    id3 = poemtube.addpoem(
+        db, title="t3", author="fred 1", text="t3", user="user1" )
+    id4 = poemtube.addpoem(
+        db, title="t4", author="fred 3", text="t4", user="user1" )
+    id5 = poemtube.addpoem(
+        db, title="t5", author="fred 1", text="t5", user="user1" )
 
     # This is what we are testing
     answer = poemtube.listpoems( db, search="fred 1" )
@@ -78,7 +83,12 @@ def Getting_a_nonexistent_poem_is_an_error__test():
 def Can_add_a_new_poem__test():
     db = FakeDb()
     id = poemtube.addpoem(
-        db, title="title X", author="author X", text="text X" )
+        db,
+        title="title X",
+        author="author X",
+        text="text X",
+        user="user1"
+    )
 
     assert_equal( "title-x", id )
 
@@ -87,6 +97,11 @@ def Can_add_a_new_poem__test():
     assert_equal( "title X", newentry["title"] )
     assert_equal( "author X", newentry["author"] )
     assert_equal( "text X", newentry["text"] )
+
+@raises( InvalidRequest )
+def Adding_a_poem_not_logged_in_is_an_error__test():
+    db = FakeDb()
+    poemtube.addpoem( db, "X", "X", "X", user=None )
 
 def Id_is_all_lower_case__test():
     assert_equal(
@@ -109,19 +124,44 @@ def Id_replaces_nonalphanum_with_dashes__test():
 def Can_replace_an_existing_poem__test():
     db = FakeDb()
     poemtube.replacepoem(
-        db, "id1", title="title X", author="author X", text="text X" )
+        db,
+        "id1",
+        title="title X",
+        author="author X",
+        text="text X",
+        user="user1"
+    )
 
     modentry = db.poems.data["id1"]
 
     assert_equal( "title X",  modentry["title"] )
     assert_equal( "author X", modentry["author"] )
     assert_equal( "text X",   modentry["text"] )
+    assert_equal( "user1",    modentry["contributor"] )
+
+@raises( InvalidRequest )
+def Replacing_a_poem_contributed_by_someone_else_is_an_error():
+    db = FakeDb()
+    poemtube.replacepoem(
+        db, "id1", title="X", author="X", text="X", user="user2" )
+
+@raises( InvalidRequest )
+def Replacing_a_poem_not_logged_in_is_an_error():
+    db = FakeDb()
+    poemtube.replacepoem(
+        db, "id1", title="X", author="X", text="X", user=None )
 
 @raises( InvalidRequest )
 def Replacing_a_nonexistent_poem_is_an_error__test():
     db = FakeDb()
     poemtube.replacepoem(
-        db, "nonexistid", title="title X", author="author X", text="text X" )
+        db,
+        "nonexistid",
+        title="title X",
+        author="author X",
+        text="text X",
+        user="user1"
+    )
 
 def Can_delete_a_poem__test():
     db = FakeDb()
@@ -130,15 +170,20 @@ def Can_delete_a_poem__test():
     assert_true( "id1" in db.poems )
 
     # This is what we are testing - delete the item
-    poemtube.deletepoem( db, "id1" )
+    poemtube.deletepoem( db, "id1", user="user1" )
 
     # It has gone
     assert_false( "id1" in db.poems )
 
 @raises( InvalidRequest )
+def Deleting_a_poem_not_contributed_by_you_is_an_error__test():
+    db = FakeDb()
+    poemtube.deletepoem( db, "id1", user="user2" )
+
+@raises( InvalidRequest )
 def Deleting_a_nonexistent_poem_is_an_error__test():
     db = FakeDb()
-    poemtube.deletepoem( db, "nonexistid" )
+    poemtube.deletepoem( db, "nonexistid", user="user1" )
 
 def Can_amend_a_poem_title__test():
     db = FakeDb()
@@ -146,22 +191,24 @@ def Can_amend_a_poem_title__test():
     # Sanity - before modifying
     assert_equal(
         {
-            "title"  : "title1",
-            "author" : "author1",
-            "text"   : "text1"
+            "title"       : "title1",
+            "author"      : "author1",
+            "text"        : "text1",
+            "contributor" : "user1"
         },
         db.poems.data["id1"]
     )
 
     # This is what we are testing
-    poemtube.amendpoem( db, "id1", { "title": "title X" } )
+    poemtube.amendpoem( db, "id1", { "title": "title X" }, user="user1" )
 
     # Title changed
     assert_equal(
         {
-            "title"  : "title X",
-            "author" : "author1",
-            "text"   : "text1"
+            "title"       : "title X",
+            "author"      : "author1",
+            "text"        : "text1",
+            "contributor" : "user1"
         },
         db.poems.data["id1"]
     )
@@ -170,14 +217,15 @@ def Can_amend_a_poem_author__test():
     db = FakeDb()
 
     # This is what we are testing
-    poemtube.amendpoem( db, "id1", { "author": "author X" } )
+    poemtube.amendpoem( db, "id1", { "author": "author X" }, user="user1" )
 
     # Title changed
     assert_equal(
         {
-            "title"  : "title1",
-            "author" : "author X",
-            "text"   : "text1"
+            "title"       : "title1",
+            "author"      : "author X",
+            "text"        : "text1",
+            "contributor" : "user1"
         },
         db.poems.data["id1"]
     )
@@ -186,14 +234,15 @@ def Can_amend_a_poem_text__test():
     db = FakeDb()
 
     # This is what we are testing
-    poemtube.amendpoem( db, "id2", { "text": "text X" } )
+    poemtube.amendpoem( db, "id2", { "text": "text X" }, user="user2" )
 
     # Title changed
     assert_equal(
         {
-            "title"  : "title2",
-            "author" : "author2",
-            "text"   : "text X"
+            "title"       : "title2",
+            "author"      : "author2",
+            "text"        : "text X",
+            "contributor" : "user2"
         },
         db.poems.data["id2"]
     )
@@ -203,26 +252,43 @@ def Can_amend_a_poem_multiple__test():
     db = FakeDb()
 
     # This is what we are testing
-    poemtube.amendpoem( db, "id1", { "text": "text X", "author": "author X" } )
+    poemtube.amendpoem(
+        db, "id1", { "text": "text X", "author": "author X" }, user="user1" )
 
     # Title changed
     assert_equal(
         {
-            "title"  : "title1",
-            "author" : "author X",
-            "text"   : "text X"
+            "title"       : "title1",
+            "author"      : "author X",
+            "text"        : "text X",
+            "contributor" : "user1"
         },
         db.poems.data["id1"]
     )
 
 
 @raises( InvalidRequest )
+def Attempting_to_change_contributor_is_an_error__test():
+    poemtube.amendpoem(
+        FakeDb(), "id1", { "text": "t", "contributor": "foo" }, user="user1" )
+
+@raises( InvalidRequest )
 def Amending_using_unknown_property_is_an_error__test():
-    poemtube.amendpoem( FakeDb(), "id1", { "text": "t", "badprop": "foo" } )
+    poemtube.amendpoem(
+        FakeDb(), "id1", { "text": "t", "badprop": "foo" }, user="user1" )
 
 
 @raises( InvalidRequest )
 def Amending_an_unknown_id_is_an_error__test():
-    poemtube.amendpoem( FakeDb(), "unknown", { "text": "t" } )
+    poemtube.amendpoem( FakeDb(), "unknown", { "text": "t" }, user="user1" )
 
+
+@raises( InvalidRequest )
+def Amending_someone_elses_poem_is_an_error__test():
+    poemtube.amendpoem( FakeDb(), "id1", { "text": "t" }, user="user2" )
+
+
+@raises( InvalidRequest )
+def Amending_not_logged_in_is_an_error__test():
+    poemtube.amendpoem( FakeDb(), "id1", { "text": "t" }, user=None )
 

@@ -2,9 +2,12 @@
 from paste.fixture import TestApp
 from nose.tools import *
 
+import base64
 import json
 import warnings
 import web
+
+from copy import copy
 
 from fakedb import FakeDb
 
@@ -111,10 +114,11 @@ def Can_get_single_poem_in_json__test():
     # We get back the details of a poem
     assert_equal(
         {
-            "id"     : "id1",
-            "title"  : "title1",
-            "author" : "author1",
-            "text"   : "text1",
+            "id"          : "id1",
+            "title"       : "title1",
+            "author"      : "author1",
+            "text"        : "text1",
+            "contributor" : "user1",
         },
         json.loads( r.body )
     )
@@ -134,6 +138,12 @@ def Getting_a_nonexistent_poem_returns_an_error_response__test():
     )
 
 
+def auth_header( user, pw ):
+    info = base64.encodestring( "%s:%s" % ( user, pw ) )
+    return {
+        "Authorization": "Basic " + info
+    }
+
 
 def Can_add_new_poem_in_json__test():
     poem = {
@@ -144,7 +154,11 @@ def Can_add_new_poem_in_json__test():
 
     # This is what we are testing - add a poem
     app = test_app()
-    r = app.post( "/api/v1/poems", params=json.dumps( poem ) )
+    r = app.post(
+        "/api/v1/poems",
+        params=json.dumps( poem ),
+        headers=auth_header( "user1", "pass1" )
+    )
     assert_successful_json_response( r )
 
     # We should have responded with the id of the new poem
@@ -152,7 +166,29 @@ def Can_add_new_poem_in_json__test():
     assert_equal( "my-new-poem", newid )
 
     # And the database should have the poem added
-    assert_equal( poem, app.fakedb.poems.data[newid] )
+    expected = copy( poem )
+    expected["contributor"] = "user1"
+    assert_equal( expected, app.fakedb.poems.data[newid] )
+
+
+def Bad_password_prevents_add__test():
+    r = test_app().post(
+        "/api/v1/poems",
+        params=json.dumps( { "title": "x" } ),
+        headers=auth_header( "user1", "bad password" ),
+        expect_errors=True
+    )
+    assert_equal( 401, r.status )
+
+
+def No_login_prevents_add__test():
+    r = test_app().post(
+        "/api/v1/poems",
+        params=json.dumps( { "title": "x" } ),
+        headers={},
+        expect_errors=True
+    )
+    assert_equal( 401, r.status )
 
 
 def Can_replace_existing_poem_in_json__test():
@@ -168,14 +204,51 @@ def Can_replace_existing_poem_in_json__test():
     assert_equal( "title2", app.fakedb.poems.data["id2"]["title"] )
 
     # This is what we are testing - modify an existing poem
-    r = app.put( "/api/v1/poems/id2", params=json.dumps( poem ) )
+    r = app.put(
+        "/api/v1/poems/id2",
+        params=json.dumps( poem ),
+        headers=auth_header( "user2", "pass2" )
+    )
     assert_successful_json_response( r )
 
     # The response is empty
     assert_equal( "", json.loads( r.body ) )
 
     # The database should have new version of the poem
-    assert_equal( poem, app.fakedb.poems.data["id2"] )
+    expected = copy( poem )
+    expected["contributor"] = "user2"
+    assert_equal( expected, app.fakedb.poems.data["id2"] )
+
+
+def Wrong_user_prevents_replace__test():
+    r = test_app().put(
+        "/api/v1/poems/id1",
+        params=json.dumps( { "title": "x", "author": "x", "text": "x" } ),
+        headers=auth_header( "user2", "pass2" ),
+        expect_errors=True
+    )
+    print r
+    assert_equal( 403, r.status )
+
+
+def Bad_password_prevents_replace__test():
+    r = test_app().put(
+        "/api/v1/poems/id1",
+        params=json.dumps( { "title": "x" } ),
+        headers=auth_header( "user1", "bad password" ),
+        expect_errors=True
+    )
+    assert_equal( 401, r.status )
+
+
+def No_login_prevents_replace__test():
+    r = test_app().put(
+        "/api/v1/poems/id1",
+        params=json.dumps( { "title": "x" } ),
+        headers={},
+        expect_errors=True
+    )
+    assert_equal( 401, r.status )
 
 
 def Replacing_a_nonexistent_poem_returns_error_response__test():
@@ -185,6 +258,7 @@ def Replacing_a_nonexistent_poem_returns_error_response__test():
     r = test_app().put(
         "/api/v1/poems/nonexistentid",
         params=json.dumps( poem ),
+        headers=auth_header( "user2", "pass2" ),
         expect_errors=True
     )
 
@@ -207,7 +281,9 @@ def Can_delete_existing_poem_in_json__test():
     assert_true( "id3" in app.fakedb.poems )
 
     # This is what we are testing - modify an existing poem
-    r = app.delete( "/api/v1/poems/id3" )
+    r = app.delete(
+        "/api/v1/poems/id3", headers=auth_header( "user3", "pass3" ) )
+
     assert_successful_json_response( r )
 
     # The response is empty
@@ -217,9 +293,40 @@ def Can_delete_existing_poem_in_json__test():
     assert_false( "id3" in app.fakedb.poems )
 
 
+def Wrong_user_prevents_delete__test():
+    r = test_app().delete(
+        "/api/v1/poems/id1",
+        headers=auth_header( "user2", "pass2" ),
+        expect_errors=True
+    )
+    assert_equal( 403, r.status )
+
+
+def Bad_password_prevents_delete__test():
+    r = test_app().delete(
+        "/api/v1/poems/id1",
+        headers=auth_header( "user1", "bad password" ),
+        expect_errors=True
+    )
+    assert_equal( 401, r.status )
+
+
+def No_login_prevents_delete__test():
+    r = test_app().delete(
+        "/api/v1/poems/id1",
+        headers={},
+        expect_errors=True
+    )
+    assert_equal( 401, r.status )
+
+
 def Deleting_a_nonexistent_poem_returns_error_response__test():
     # This is what we are testing
-    r = test_app().delete( "/api/v1/poems/nonexistentid", expect_errors=True )
+    r = test_app().delete(
+        "/api/v1/poems/nonexistentid",
+        headers=auth_header( "user2", "pass2" ),
+        expect_errors=True
+    )
 
     # The request failed
     assert_failed_json_response( 404, r )
@@ -233,11 +340,12 @@ def Deleting_a_nonexistent_poem_returns_error_response__test():
     )
 
 
-def patch( app, url, params, expect_errors=False ):
+def patch( app, url, params, headers, expect_errors=False ):
     return app.post(
         url,
         extra_environ={ "REQUEST_METHOD": "PATCH" },
         params=params,
+        headers=headers,
         expect_errors=expect_errors
     )
 
@@ -254,15 +362,17 @@ def Can_amend_an_existing_poem__test():
     r = patch(
         app,
         "/api/v1/poems/id2",
-        params=json.dumps( newprops )
+        params=json.dumps( newprops ),
+        headers=auth_header( "user2", "pass2" )
     )
     assert_successful_json_response( r )
 
     assert_equal(
         {
-            "title": "title2",
-            "author": "Me",
-            "text"  : "my peom\nis    misspelt.\n"
+            "title"       : "title2",
+            "author"      : "Me",
+            "text"        : "my peom\nis    misspelt.\n",
+            "contributor" : "user2",
         },
         app.fakedb.poems.data["id2"]
     )
@@ -275,6 +385,7 @@ def Amending_a_nonexistent_poem_returns_an_error__test():
         test_app(),
         "/api/v1/poems/nonexistentid",
         params=json.dumps( poem ),
+        headers=auth_header( "user2", "pass2" ),
         expect_errors=True
     )
 
@@ -298,6 +409,7 @@ def Amending_with_a_bad_property_returns_an_error__test():
         test_app(),
         "/api/v1/poems/id2",
         params=json.dumps( poem ),
+        headers=auth_header( "user2", "pass2" ),
         expect_errors=True
     )
 
@@ -311,6 +423,39 @@ def Amending_with_a_bad_property_returns_an_error__test():
         },
         json.loads( r.body )
     )
+
+
+def Wrong_user_prevents_amend__test():
+    r = patch(
+        test_app(),
+        "/api/v1/poems/id1",
+        params=json.dumps( { "title": "x" } ),
+        headers=auth_header( "user2", "pass2" ),
+        expect_errors=True
+    )
+    assert_equal( 403, r.status )
+
+
+def Bad_password_prevents_amend__test():
+    r = patch(
+        test_app(),
+        "/api/v1/poems/id1",
+        params=json.dumps( { "title": "x" } ),
+        headers=auth_header( "user1", "bad password" ),
+        expect_errors=True
+    )
+    assert_equal( 401, r.status )
+
+
+def No_login_prevents_amend__test():
+    r = patch(
+        test_app(),
+        "/api/v1/poems/id1",
+        params=json.dumps( { "title": "x" } ),
+        headers={},
+        expect_errors=True
+    )
+    assert_equal( 401, r.status )
 
 
 # TODO: error conditions:

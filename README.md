@@ -57,20 +57,20 @@ Get a poem:
 
 Add a poem:
 
-    $ curl --data '{"title":"Foo","author":"Bar","text":"Baz"}' http://localhost:8080/api/v1/poems
+    $ curl --data '{"title":"Foo","author":"Bar","text":"Baz"}' http://localhost:8080/api/v1/poems -u user1:pass1
     foo
     $ curl http://localhost:8080/api/v1/poems/foo
     {"text": "Baz", "title": "Foo", "id": "foo", "author": "Bar"}
 
 Replace a poem:
 
-    $ curl --request PUT --data '{"title":"Foo2","author":"Bar2","text":"Baz2"}' http://localhost:8080/api/v1/poems/a-question
+    $ curl --request PUT --data '{"title":"Foo2","author":"Bar2","text":"Baz2"}' http://localhost:8080/api/v1/poems/a-question -u user1:pass1
     $ curl http://localhost:8080/api/v1/poems/a-question
     {"text": "Baz2", "title": "Foo2", "id": "foo", "author": "Bar2"}
 
 Delete a poem:
 
-    $ curl --request DELETE http://localhost:8080/api/v1/poems/a-question
+    $ curl --request DELETE http://localhost:8080/api/v1/poems/a-question -u user1:pass1
     ""
     $ curl -i http://localhost:8080/api/v1/poems/a-question
     HTTP/1.1 404 Not Found
@@ -83,7 +83,7 @@ Delete a poem:
 
 Amend a poem:
 
-    $ curl --request PATCH --data '{"text":"Cheer up"}' http://localhost:8080/api/v1/poems/a-question
+    $ curl --request PATCH --data '{"text":"Cheer up"}' http://localhost:8080/api/v1/poems/a-question -u user1:pass1
     ""
     $ curl http://localhost:8080/api/v1/poems/a-question
     {"text": "Cheer up", "title": "A Question", "id": "a-question", "author": "Robert Frost"}

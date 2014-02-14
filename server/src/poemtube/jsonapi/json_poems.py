@@ -33,18 +33,18 @@ def my_listpoems( db, queryparams ):
     return list( listpoems( db, count=count, search=search ) )
 
 
-def my_replacepoem( db, id, title, author, text ):
-    replacepoem( db, id=id, title=title, author=author, text=text )
+def my_replacepoem( db, id, title, author, text, user ):
+    replacepoem( db, id=id, title=title, author=author, text=text, user=user )
     return ""
 
 
-def my_deletepoem( db, id ):
-    deletepoem( db, id )
+def my_deletepoem( db, id, user ):
+    deletepoem( db, id, user )
     return ""
 
 
-def my_amendpoem( db, id, newprops ):
-    amendpoem( db, id, newprops )
+def my_amendpoem( db, id, newprops, user ):
+    amendpoem( db, id, newprops, user )
     return ""
 
 
@@ -59,24 +59,25 @@ def do( fn, *args, **kwargs ):
         raise JsonInvalidRequest( e )
 
 
-def GET( db, id, query_params={} ):
+def GET( db, id, user, query_params={} ):
     if id == "":
         return do( my_listpoems, db, query_params )
     else:
         return do( getpoem, db, id )
 
 
-def POST( db, data ):
+def POST( db, data, user ):
     parsed_data = json.loads( data )
     return do(
         addpoem,
         db=db,
         title = parsed_data["title"],
         author= parsed_data["author"],
-        text  = parsed_data["text"]
+        text  = parsed_data["text"],
+        user=user
     )
 
-def PUT( db, id, data ):
+def PUT( db, id, data, user ):
     parsed_data = json.loads( data )
     return do(
         my_replacepoem,
@@ -84,13 +85,14 @@ def PUT( db, id, data ):
         id=id,
         title = parsed_data["title"],
         author= parsed_data["author"],
-        text  = parsed_data["text"]
+        text  = parsed_data["text"],
+        user=user
     )
 
-def DELETE( db, id ):
-    return do( my_deletepoem, db, id )
+def DELETE( db, id, user ):
+    return do( my_deletepoem, db, id, user )
 
-def PATCH( db, id, data ):
+def PATCH( db, id, data, user ):
     parsed_data = json.loads( data )
-    return do( my_amendpoem, db=db, id=id, newprops=parsed_data )
+    return do( my_amendpoem, db=db, id=id, newprops=parsed_data, user=user )
 

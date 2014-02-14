@@ -10,7 +10,8 @@ sample_data = [
             "And tell me truly, men of earth,\n" +
             "If all the soul-and-body scars\n" +
             "Were not too much to pay for birth.\n",
-        "author" : "Robert Frost"
+        "author" : "Robert Frost",
+        "contributor": "user1"
     },
 
     {
@@ -49,7 +50,8 @@ sample_data = [
             "but if you look long enough,\n" +
             "eventually\n" +
             "you will be able to see me.)\n",
-        "author": "Margaret Atwood"
+        "author": "Margaret Atwood",
+        "contributor": "user1"
     }
 ]
 
