@@ -9,6 +9,7 @@ class LogIn:
         self.db = poemtube.db.which_db.get_db()
 
     def GET( self ):
-        web.header( 'Content-Type', 'application/json' )
         user = require_authenticated_user( self.db )
+        web.setcookie( "authentication_token", "Security token!" )
+        web.ctx.status = "204 No Content"
 

@@ -466,6 +466,29 @@ def No_login_prevents_logging_in__test():
     assert_equal( 401, r.status )
 
 
+def Incorrect_login_prevents_logging_in__test():
+    # This is what we are testing - try to log in,
+    # but we fail because password is wrong.
+    app = test_app()
+    r = app.get(
+        "/api/v1/login",
+        headers=auth_header( "user1", "bad password" ),
+        expect_errors=True,
+    )
+    assert_equal( 401, r.status )
+
+
+def Correct_login_sets_a_cookie__test():
+    # This is what we are testing - try to log in,
+    # but we fail because password is wrong.
+    app = test_app()
+    r = app.get(
+        "/api/v1/login",
+        headers=auth_header( "user1", "pass1" )
+    )
+    assert_equal( 204, r.status )
+    assert_true( "authentication_token" in r.cookies_set )
+
 
 # TODO: error conditions:
 #   - missing id for PUT/PATCH
