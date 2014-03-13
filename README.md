@@ -88,6 +88,14 @@ Amend a poem:
     $ curl http://localhost:8080/api/v1/poems/a-question
     {"text": "Cheer up", "title": "A Question", "id": "a-question", "author": "Robert Frost"}
 
+Get a login session:
+
+    $ curl -c mycookies.txt http://localhost:8080/api/v1/login -u user1:pass1
+
+This stores an authentication token in a cookie in mycookies.txt.  Now we can act as this user by including this cookie in our requests, with no username and password.
+
+    $ curl -b mycookies.txt --data '{"title":"Foo","author":"Bar","text":"Baz"}' http://localhost:8080/api/v1/poems
+
 Launching in different modes
 ----------------------------
 

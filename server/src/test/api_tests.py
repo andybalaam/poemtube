@@ -144,6 +144,11 @@ def auth_header( user, pw ):
         "Authorization": "Basic " + info
     }
 
+def token_header( token ):
+    return {
+        "Cookie": "authentication_token=" + token
+    }
+
 
 def Can_add_new_poem_in_json__test():
     poem = {
@@ -479,8 +484,7 @@ def Incorrect_login_prevents_logging_in__test():
 
 
 def Correct_login_sets_a_cookie__test():
-    # This is what we are testing - try to log in,
-    # but we fail because password is wrong.
+    # This is what we are testing - log in, and a cookie should be set
     app = test_app()
     r = app.get(
         "/api/v1/login",
@@ -488,6 +492,62 @@ def Correct_login_sets_a_cookie__test():
     )
     assert_equal( 204, r.status )
     assert_true( "authentication_token" in r.cookies_set )
+
+
+def Unknown_token_prevents_creating_a_poem__test():
+    # This is what we are testing - try to post with a security
+    # token, but fail because it's not a real one.
+    app = test_app()
+    r = app.post(
+        "/api/v1/poems",
+        headers=token_header( "fake_security_token" ),
+        expect_errors=True,
+    )
+    assert_equal( 401, r.status )
+
+
+def Valid_token_allows_creating_a_poem__test():
+    app = test_app()
+    # Get a token
+    login_response = app.get(
+        "/api/v1/login",
+        headers=auth_header( "user2", "pass2" )
+    )
+
+    poem = {
+        "title"  : "My New Poem",
+        "author" : "Frank Black",
+        "text"   : "Soda spoke\n  softly\nSoda\n"
+    }
+    # This is what we are testing - add a poem
+    r = app.post(
+        "/api/v1/poems",
+        params=json.dumps( poem ),
+        headers=token_header(
+            login_response.cookies_set["authentication_token"] ),
+    )
+    assert_equal( 200, r.status )
+
+    # Poem was added as user2 (who we logged in as)
+    r2 = app.get( "/api/v1/poems/" + json.loads( r.body ) )
+    assert_equal( "user2", json.loads( r2.body )["contributor"] )
+
+
+def Different_user_gets_different_token__test():
+    app = test_app()
+    r1 = app.get(
+        "/api/v1/login",
+        headers=auth_header( "user1", "pass1" )
+    )
+    r2 = app.get(
+        "/api/v1/login",
+        headers=auth_header( "user2", "pass2" )
+    )
+    assert_not_equal(
+        r1.cookies_set["authentication_token"],
+        r2.cookies_set["authentication_token"]
+    )
+
 
 
 # TODO: error conditions:

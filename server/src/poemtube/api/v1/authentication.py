@@ -18,8 +18,21 @@ def unathorized():
         }
     )
 
+def authenticate_token( db, authentication_token ):
+    if authentication_token is None:
+        return None
+
+    if authentication_token in db.tokens:
+        return db.tokens[authentication_token]["user"]
+
 
 def authenticate_user( db ):
+
+    authentication_token = web.cookies().get( "authentication_token" )
+    user_from_token = authenticate_token( db, authentication_token )
+    if user_from_token is not None:
+        return user_from_token
+
     auth = web.ctx.env.get( "HTTP_AUTHORIZATION" )
     if auth is None:
         return None

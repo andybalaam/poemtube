@@ -34,4 +34,5 @@ class FakeCouchDatabase( object ):
 class MemoryDb( object ):
     def __init__( self ):
         self.poems = FakeCouchDatabase()
+        self.tokens = FakeCouchDatabase()
 
