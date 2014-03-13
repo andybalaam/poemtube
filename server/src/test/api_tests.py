@@ -458,6 +458,15 @@ def No_login_prevents_amend__test():
     assert_equal( 401, r.status )
 
 
+def No_login_prevents_logging_in__test():
+    # This is what we are testing - try to log in,
+    # but we fail because we provided no auth header
+    app = test_app()
+    r = app.get( "/api/v1/login", expect_errors=True )
+    assert_equal( 401, r.status )
+
+
+
 # TODO: error conditions:
 #   - missing id for PUT/PATCH
 #   - any id for POST
