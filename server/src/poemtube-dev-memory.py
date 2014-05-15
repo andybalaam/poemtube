@@ -7,6 +7,7 @@
 import os
 import sys
 import web
+from web import webopenid
 
 from poemtube import urls
 from poemtube.db import MemoryDb

@@ -1,6 +1,7 @@
 import base64
 import re
 import web
+from web import webopenid
 
 known_users = {
     "user1": "pass1",
@@ -27,6 +28,10 @@ def authenticate_token( db, authentication_token ):
 
 
 def authenticate_user( db ):
+
+    oid = webopenid.status()
+    if oid:
+        return oid
 
     authentication_token = web.cookies().get( "authentication_token" )
     user_from_token = authenticate_token( db, authentication_token )
